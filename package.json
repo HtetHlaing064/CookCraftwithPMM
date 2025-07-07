@@ -9,8 +9,21 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource/roboto": "^5.2.6",
+    "@mui/icons-material": "^7.2.0",
+    "@mui/material": "^7.2.0",
+    "@mui/material-nextjs": "^7.0.0-rc.0",
+    "@mui/styled-engine-sc": "^7.2.0",
+    "@mui/x-date-pickers": "^8.7.0",
+    "@prisma/client": "^6.11.1",
+    "dayjs": "^1.11.13",
+    "next": "15.3.5",
+    "prisma": "^6.11.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.3.5"
+    "styled-components": "^6.1.19"
   }
 }
