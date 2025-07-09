@@ -8,9 +8,12 @@ import {
   TextField,
   Typography,
   NextLink,
-
+  InputAdornment,
+  IconButton,
 
 } from "@mui/material";
+
+import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -18,6 +21,9 @@ import axios from "axios";
 
 import MuiLink from '@mui/material/Link';
 import Link from 'next/link';
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+
+
 
 const schema = yup.object().shape({
   username: yup.string().required("Name is required"),
@@ -35,6 +41,9 @@ const schema = yup.object().shape({
 
 
 export default function SignIn() {
+
+  // password icon view
+const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -56,7 +65,9 @@ export default function SignIn() {
         password: formData.password,
 
       };
+
       const response = await axios.post("/api/users", bodyData);
+
       reset();
       console.log("Successfully Saved.");
     } catch (error) {
@@ -127,18 +138,31 @@ export default function SignIn() {
             helperText={errors.email?.message}
 
           />
+
           <TextField
             fullWidth
             label="Password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             variant="outlined"
             margin="normal"
-
             {...register("password")}
             error={!!errors.password}
             helperText={errors.password?.message}
-
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
+
+
           <Button
             fullWidth
             variant="contained"

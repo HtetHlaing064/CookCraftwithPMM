@@ -14,11 +14,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+// enum Role{
+//   admin
+//   user
+// }
+
 model User {
     id       Int    @id @default(autoincrement())
     username     String @db.VarChar(255)
     email    String @db.VarChar(255)
     password String @db.VarChar(255)
+    // image_url String? @db.VarChar(255)
+    // role Role
+
 
     @@map("users")
 }
