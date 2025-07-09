@@ -4,21 +4,124 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-generator client {
-  provider = "prisma-client-js"
-  // output   = "../src/generated/prisma"
-}
+// generator client {
+//   provider = "prisma-client-js"
+//   // output   = "../src/generated/prisma"
+// }
 
-datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
-}
+// datasource db {
+//   provider = "mysql"
+//   url      = env("DATABASE_URL")
+// }
 
-model User {
-    id       Int    @id @default(autoincrement())
-    username     String @db.VarChar(255)
-    email    String @db.VarChar(255)
-    password String @db.VarChar(255)
+// model User {
+//   id         Int         @id @default(autoincrement())
+//   username   String      @db.VarChar(255)
+//   email      String      @db.VarChar(255)
+//   password   String      @db.VarChar(255)
+//   recipes    Recipe[]
+//   favourites Favourite[]
+//   comments   Comment[]
+//   likes      Like[]
+//   histories  History[]
 
-    @@map("users")
-}
+//   @@map("users")
+// }
+
+// enum CATEGORY {
+//   breakfast
+//   lunch
+//   dinner
+//   dessert
+// }
+
+// enum STATUS {
+//   pending
+//   approve
+//   reject
+// }
+
+// // model Recipe {
+// //   id       Int    @id @default(autoincrement())
+// //   user_id  Int 
+// //   user User @relation(fields: [user_id], references: [id])
+// //   name String @db.VarChar(255)
+// //   ingredient String @db.Text
+// //   instruction String @db.Text
+// //   category CATEGORY
+// //   pre_cooking_time String @db.VarChar(255)
+// //   cooking_time String @db.VarChar(255)
+// //   image String @db.VarChar(255)
+// //   video_url String @db.VarChar(255)
+// //   status STATUS
+// // }
+
+// model Recipe {
+//   id      Int  @id @default(autoincrement())
+//   user_id Int
+//   user    User @relation(fields: [user_id], references: [id])
+
+//   name             String      @db.VarChar(255)
+//   ingredient       String      @db.Text
+//   instruction      String      @db.Text
+//   category         CATEGORY
+//   pre_cooking_time String      @db.VarChar(255)
+//   cooking_time     String      @db.VarChar(255)
+//   image            String      @db.VarChar(255)
+//   video_url        String      @db.VarChar(255)
+//   status           STATUS
+//   favourites       Favourite[]
+//   comments         Comment[]
+//   likes            Like[]
+//   histories        History[]
+
+//   @@map("recipes")
+// }
+
+// model Favourite {
+//   id        Int    @id @default(autoincrement())
+//   user_id   Int
+//   user      User   @relation(fields: [user_id], references: [id])
+//   recipe_id Int
+//   recipe    Recipe @relation(fields: [recipe_id], references: [id])
+
+//   @@map("favourites")
+// }
+
+// model Comment {
+//   id           Int    @id @default(autoincrement())
+//   user_id      Int
+//   user         User   @relation(fields: [user_id], references: [id])
+//   recipe_id    Int
+//   recipe       Recipe @relation(fields: [recipe_id], references: [id])
+//   comment_text String @db.Text
+
+//   @@map("comments")
+// }
+
+// model Like {
+//   id        Int    @id @default(autoincrement())
+//   user_id   Int
+//   user      User   @relation(fields: [user_id], references: [id])
+//   recipe_id Int
+//   recipe    Recipe @relation(fields: [recipe_id], references: [id])
+
+//   @@map("likes")
+// }
+
+// enum ACTION {
+//   created
+//   liked
+//   commented
+// }
+
+// model History {
+//   id          Int    @id @default(autoincrement())
+//   user_id     Int
+//   user        User   @relation(fields: [user_id], references: [id])
+//   recipe_id   Int
+//   recipe      Recipe @relation(fields: [recipe_id], references: [id])
+//   action_type ACTION
+
+//   @@map("histories")
+// }
