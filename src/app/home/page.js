@@ -270,7 +270,7 @@ export default function Navbar() {
           
           {/*  Action Icons */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Link href="/create" passHref>
+            <Link href="/recipes/create" passHref>
                 <Button variant="contained" startIcon={<Typography>+</Typography>} sx={{ 
                     backgroundColor: '#ff6f61', 
                     borderRadius: '20px',
