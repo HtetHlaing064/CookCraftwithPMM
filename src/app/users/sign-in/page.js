@@ -204,9 +204,10 @@ import axios from "axios";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import MuiLink from '@mui/material/Link';
 import Link from 'next/link';
+import { signIn } from "next-auth/react";
 
 const schema = yup.object().shape({
-  email: yup.string().required("Email is required"),
+  identifier: yup.string().required("Username or Email is required"),
   password: yup.string().required("Password is required"),
 });
 
@@ -214,12 +215,12 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
 
+
   const router = useRouter();
 
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -229,23 +230,26 @@ export default function Login() {
   try {
     setLoginError("");
 
-    const response = await axios.post("/api/users/sign-in", formData);
+    const response = await signIn("credentials", {
+      ...formData,
+      redirect: false,
+    });
 
-    if (response.data.success) {
+    if (response.ok) {
       router.push("/home");
     } else {
-      setLoginError(response.data.error || "Invalid credentials");
+      setLoginError(response.error || "Invalid credentials. Please try again.");
     }
   } catch (error) {
     console.error(error);
-    setLoginError("Something went wrong. Please try again.");
+    setLoginError("An unexpected error occurred. Please try again.");
   }
 };
 
 
     return (
     <Box
-      padding={2}
+      // padding={2}
       component="form"
       onSubmit={handleSubmit(onSubmit)}
       sx={{
@@ -294,15 +298,14 @@ export default function Login() {
             Sign in to continue sharing
           </Typography>
 
-        <TextField
-          fullWidth
-          label="Email"
-          type="email"
+          <TextField
+          label="Username or Email"
           variant="outlined"
           margin="normal"
-          {...register("email")}
-          error={!!errors.email}
-          helperText={errors.email?.message}
+          fullWidth
+          {...register("identifier")}
+          error={!!errors.identifier}
+          helperText={errors.identifier?.message}
         />
 
         <TextField
@@ -321,7 +324,7 @@ export default function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                   edge="end"
                 >
-                  {showPassword ? <Visibility /> : <VisibilityOff />}
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
             ),
