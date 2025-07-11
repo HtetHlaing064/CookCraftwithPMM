@@ -16,7 +16,7 @@ datasource db {
 
 model User {
   id         Int         @id @default(autoincrement())
-  username   String      @db.VarChar(255)
+  username   String      @unique
   email      String      @db.VarChar(255)
   password   String      @db.VarChar(255)
   recipes    Recipe[]
@@ -68,7 +68,7 @@ model Recipe {
   pre_cooking_time String      @db.VarChar(255)
   cooking_time     String      @db.VarChar(255)
   image            String      @db.VarChar(255)
-  video_url        String      @db.VarChar(255)
+  video_url        String     @db.VarChar(255)
   status           STATUS
   favourites       Favourite[]
   comments         Comment[]

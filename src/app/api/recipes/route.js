@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import * as yup from "yup";
-import { prisma } from "@/lib/prisma"; //pisma ချိတ်
+import { prisma } from "@/lib/prisma"; 
+import formidable from "formidable";
+import fs from "fs";//pisma ချိတ်
 
 
 const schema = yup.object().shape({
@@ -88,6 +90,10 @@ export async function GET() {
 //     );
 // }
 
+
+
+
+
 //create
 export async function POST(req) {
   try {
@@ -127,4 +133,16 @@ export async function POST(req) {
       }
     );
   }
+
+  
 }
+
+
+
+
+
+
+
+
+
+

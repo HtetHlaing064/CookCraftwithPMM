@@ -3,14 +3,14 @@ import { prisma } from "@/lib/prisma"; // Adjust the import based on your projec
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const username = searchParams.get("name");
+  const username = searchParams.get("username");
 
   if (!username) {
     return NextResponse.json({ message: "Username is required" }, { status: 400 });
   }
 
   const user = await prisma.user.findUnique({
-    where: { name: username },
+    where: { username: username },
   });
 
   if (!user) {

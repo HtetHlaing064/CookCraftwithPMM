@@ -243,7 +243,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 export default function Navbar() {
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" sx={{ backgroundColor: 'white', color: 'black', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
+      <AppBar position="static" sx={{ backgroundColor: 'red', color: 'black', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
         {/* Toolbar space-around  */}
         <Toolbar sx={{ justifyContent: 'space-around', alignItems: 'center' }}>
           
