@@ -1,20 +1,18 @@
 "use client";
 
-
 import {
   Box,
   Button,
   Paper,
   TextField,
   Typography,
-  NextLink,
   InputAdornment,
   IconButton,
-
 } from "@mui/material";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
@@ -23,33 +21,29 @@ import MuiLink from '@mui/material/Link';
 import Link from 'next/link';
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
-
-
 const schema = yup.object().shape({
   username: yup.string().required("Name is required"),
-  email: yup.string().required("Email is required"),
-  // password: yup.string().required("Password is required"),
+  email: yup.string().email("Must be a valid email").required("Email is required"),
   password: yup.string()
     .required('Password is required')
     .min(8, 'Password must be at least 8 characters')
-    .matches(/[A-Z]/, 'At least one uppercase letter required')
-    .matches(/[a-z]/, 'At least one lowercase letter required')
-    .matches(/\d/, 'At least one number required')
-    .matches(/[!@#$%^&*]/, 'At least one special character required'),
-
+    .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .matches(/\d/, 'Password must contain at least one number'),
 });
 
-
-export default function SignIn() {
+export default function SignUp() {
 
   // password icon view
-const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [apiError, setApiError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const {
     register,
     handleSubmit,
     reset,
-    control,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -57,21 +51,22 @@ const [showPassword, setShowPassword] = useState(false);
   })
 
   const onSubmit = async (formData) => {
+    setIsSubmitting(true);
+    setApiError("");
     try {
-      console.log("formData", formData);
-      const bodyData = {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-
-      };
-
-      const response = await axios.post("/api/users", bodyData);
-
+      await axios.post("/api/users", formData);
       reset();
-      console.log("Successfully Saved.");
+      // Optionally, show a success message before redirecting
+      router.push("/users/sign-in");
     } catch (error) {
       console.error(error);
+      if (error.response && error.response.data && error.response.data.message) {
+        setApiError(error.response.data.message);
+      } else {
+        setApiError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -155,21 +150,27 @@ const [showPassword, setShowPassword] = useState(false);
                     onClick={() => setShowPassword(!showPassword)}
                     edge="end"
                   >
-                    {showPassword ? <Visibility /> : <VisibilityOff />}
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
               ),
             }}
           />
 
+          {apiError && (
+            <Typography variant="body2" color="error" mt={1} textAlign="center">
+              {apiError}
+            </Typography>
+          )}
 
           <Button
             fullWidth
             variant="contained"
             type="submit"
             sx={{ mt: 2, backgroundColor: "#f7931e", color: "#fff" }}
+            disabled={isSubmitting}
           >
-            Sign Up
+            {isSubmitting ? "Signing Up..." : "Sign Up"}
           </Button>
 
           <Typography variant="body2" mt={2} textAlign="center">

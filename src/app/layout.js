@@ -7,6 +7,7 @@ import "slick-carousel/slick/slick-theme.css";
 import AppLayout from "./components/AppLayout";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import StyledRoot from "./StyledRoot";
+import SessionWrapper from "./SessionWrapper";
 
 
 const geistSans = Geist({
@@ -30,7 +31,11 @@ export default function RootLayout({ children }) {
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AppRouterCacheProvider>
           <StyledRoot>
-            <AppLayout>{children}</AppLayout>
+            <AppLayout>
+              <SessionWrapper>
+              {children}
+              </SessionWrapper>
+              </AppLayout>
           </StyledRoot>
         </AppRouterCacheProvider>
       </body>
