@@ -150,7 +150,7 @@ export default function SignUp() {
                     onClick={() => setShowPassword(!showPassword)}
                     edge="end"
                   >
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                  {showPassword ? <Visibility /> : <VisibilityOff/>}
                   </IconButton>
                 </InputAdornment>
               ),
