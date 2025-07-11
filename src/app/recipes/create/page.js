@@ -34,28 +34,42 @@ const CATEGORY = [
 ];
 
 const schema = yup.object().shape({
+  user_id: yup
+    .number()
+    .typeError("User ID must be a number")
+    .required("User ID is required"),
   name: yup.string().required("Recipe name is required"),
+
   ingredient: yup
     .string()
     .min(10, "Ingredients should be at least 10 characters")
     .required("Ingredients are required"),
+
   instruction: yup
     .string()
     .min(10, "Instructions should be at least 10 characters")
     .required("Instructions are required"),
+
   category: yup
     .string()
     .oneOf(["breakfast", "lunch", "dinner", "dessert"], "Invalid category")
     .required("Category is required"),
+
   pre_cooking_time: yup.string().required("Pre-cooking time is required"),
+
   cooking_time: yup.string().required("Cooking time is required"),
+
+  image: yup.mixed().required("Image is required"),
+
   video_url: yup
     .string()
     .url("Must be a valid URL")
-    .nullable()
-    .notRequired(),
-});
+    .required("Video URL is required"),
 
+  status: yup
+    .string()
+    .oneOf(["pending", "approve", "reject"], "Invalid status"),
+});
 
 export default function SubmitRecipePage() {
   const {
@@ -75,40 +89,37 @@ export default function SubmitRecipePage() {
   const [messageType, setMessageType] = useState("");
 
 
-  const onSubmit = async (formData) => {
 
-    try {
+  const onSubmit =async (formData) => {
+  try {
+      if (!session?.user?.id) {
+        setMessage("Please log in first to submit a recipe.");
+        setMessageType("error");
+        return;
+      }
 
-
-      const userResponse = await axios.get(`/api/users/by_name?username=${formData.username}`);
-      const user_id = userResponse.data.id;
-
-      const dataToSend = new FormData();
-      dataToSend.append("user_id", user_id);
-      dataToSend.append("name", formData.name);
-      dataToSend.append("ingredient", formData.ingredient);
-      dataToSend.append("instruction", formData.instruction);
-      dataToSend.append("category", formData.category);
-      dataToSend.append("pre_cooking_time", formData.pre_cooking_time);
-      dataToSend.append("cooking_time", formData.cooking_time);
-      dataToSend.append("video_url", formData.video_url);
-
+      console.log("formData", formData);
+      const bodyData = {
+         user_id: session.user.id,
+        name: formData.father_name,
+        ingredient: formData.ingredient,
+        instruction: formData.instruction,
+        category:formData.category ,
+        pre_cooking_time: formData.pre_cooking_time,
+        cooking_time: formData.cooking_time,
+        image: formData.image,
+        video_url: formData.video_url,
+      };
+      console.log(bodyData);
       
-
-      await axios.post("/api/recipes", dataToSend, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      setMessage("Recipe submitted successfully!");
-      setMessageType("success");
+      const response = await axios.post("/api/recipes", bodyData);
       reset();
-      setImageFile(null);
+      console.log("Successfully Saved.");
     } catch (error) {
-      console.error("Error saving recipe:", error);
-      setMessage("Error saving recipe");
-      setMessageType("error");
+      console.error(error);
     }
   };
+
 
 
 
@@ -270,23 +281,7 @@ export default function SubmitRecipePage() {
               helperText={errors.cooking_time?.message}
             />
 
-            {/* <FormControl fullWidth error={!!errors.category}>
-              <InputLabel>Category</InputLabel>
-              <Controller
-                name="category"
-                control={control}
-                render={({ field }) => (
-                  <Select {...field} label="Category">
-                    {CATEGORY_OPTIONS.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
-              />
-              <FormHelperText>{errors.category?.message}</FormHelperText>
-            </FormControl> */}
+           
 
             <FormControl
               fullWidth
@@ -307,12 +302,10 @@ export default function SubmitRecipePage() {
                     value={field.value || ""}
                   >
                     {CATEGORY.map((category, index) => (
-                      <MenuItem key={index} value={category.value}>
+                      <MenuItem key={category.value} value={category.value}>
                         {category.label}
                       </MenuItem>
                     ))}
-
-
                   </Select>
                 )}
               />
@@ -353,26 +346,13 @@ export default function SubmitRecipePage() {
             </Button>
 
             <TextField
-              label="Video Link (optional)"
-              fullWidth
-              {...register("video_url")}
-              error={!!errors.video_url}
-              helperText={errors.video_url?.message}
-            />
+          label="Video Link (optional)"
+          fullWidth
+          {...register("video_url")}
+          error={!!errors.video_url}
+          helperText={errors.video_url?.message}
+        />
 
-            {/* <FormControlLabel
-              control={
-                <Checkbox
-                  {...register("agreeTerms")}
-                  color="primary"
-                  checked={control._formValues.agreeTerms || false}
-                />
-              }
-              label="I agree to the terms and conditions"
-            />
-            {errors.agreeTerms && (
-              <FormHelperText error>{errors.agreeTerms.message}</FormHelperText>
-            )} */}
 
             <Button type="submit" variant="contained" size="large">
               Submit Recipe
@@ -381,7 +361,5 @@ export default function SubmitRecipePage() {
         </Paper>
       </Container>
     </Box>
-
   );
-
 }

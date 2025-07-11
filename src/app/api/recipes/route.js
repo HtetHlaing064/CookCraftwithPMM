@@ -3,7 +3,7 @@ import * as yup from "yup";
 import { prisma } from "@/lib/prisma"; 
 import formidable from "formidable";
 import fs from "fs";//pisma ချိတ်
-
+import { PrismaClient } from "@prisma/client";
 
 const schema = yup.object().shape({
     user_id: yup
@@ -93,16 +93,32 @@ export async function GET() {
 
 
 
-
+const prisma =new PrismaClient();
 //create
 export async function POST(req) {
+  
   try {
-    const body = await req.json();
-    const validatedData = await schema.validate(body, { abortEarly: false }); //we used await cause the schema is the async function //use abortEarly for testing validate that is true or false
+    const data = await req.json();
+    //const validatedData = await schema.validate(body, { abortEarly: false }); //we used await cause the schema is the async function //use abortEarly for testing validate that is true or false
 
-    const recipes = await prisma.recipe.create({
-      data: validatedData,
+    const { username, title, description, ingredients, instructions } = data;
+
+    // Find the user ID from username
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const newRecipe = await prisma.recipe.create({
+      data: {
+        title,
+        description,
+        ingredients,
+        instructions,
+        userId: user.id,
+      },
     });
+
 
     return NextResponse.json({
       message: "User is successfully created.",
