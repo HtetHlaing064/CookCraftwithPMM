@@ -90,7 +90,8 @@ const Navbar = ({ scrollToRecipes, scrollToAbout }) => {
     sx={{
       backgroundColor: 'white',
       color: 'black',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      // boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      boxShadow: '0 4px 12px rgba(255, 111, 0, 0.2)',
     }}
   >
     <Toolbar sx={{ justifyContent: 'space-around', alignItems: 'center' }}>
@@ -150,7 +151,7 @@ const Navbar = ({ scrollToRecipes, scrollToAbout }) => {
             borderRadius: '20px',
             textTransform: 'none',
             transition: 'transform 0.3s',
-            // transition: 'border-color 1s ease',
+            
             '&:hover': {
               backgroundColor: '#e65100',
               transform: 'translateY(-3px)',

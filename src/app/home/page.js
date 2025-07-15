@@ -20,7 +20,16 @@ import {
   CardMedia,
   CardContent,
   Chip,
+  ListItemIcon, ListItemText, Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+
 } from "@mui/material";
+
+import { useRouter } from "next/navigation";
+import Link from 'next/link'; // Next.js ရဲ့ Link component
 import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SearchIcon from "@mui/icons-material/Search";
@@ -35,9 +44,15 @@ import Grid from "@mui/material/Grid";
 import StarIcon from "@mui/icons-material/Star";
 import { useState } from "react";
 import Badge from "@mui/material/Badge";
-import Divider from "@mui/material/Divider";
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import AddIcon from '@mui/icons-material/Add';
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+
 
 export default function RecipeListPage() {
+
+  const router = useRouter();
+
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [anchorE2, setAnchorE2] = React.useState(null);
   const openProfile = Boolean(anchorEl);
@@ -99,6 +114,30 @@ export default function RecipeListPage() {
       image: "/images/food3.jpg",
     },
   ];
+  // navbar more 
+  const [anchorElMore, setAnchorElMore] = React.useState(null);
+  const openMore = Boolean(anchorElMore);
+
+  const handleClickMore = (event) => {
+    setAnchorElMore(event.currentTarget);
+  };
+
+  const handleCloseMore = () => {
+    setAnchorElMore(null);
+  };
+
+  const [openLogoutDialog, setOpenLogoutDialog] = React.useState(false);
+
+  const handleOpenLogoutDialog = () => setOpenLogoutDialog(true);
+  const handleCloseLogoutDialog = () => setOpenLogoutDialog(false);
+
+  const handleConfirmLogout = () => {
+    setOpenLogoutDialog(false);
+    console.log("User confirmed log out");
+    router.push("/"); 
+    // သင့် Log Out Logic ထည့်ပါ (ဥပမာ: router.push("/login"))
+  };
+
 
   // Sample notification data to populate the dropdown
   const notifications = [
@@ -215,6 +254,7 @@ export default function RecipeListPage() {
       prevArrow: <PrevArrow />,
     };
 
+
     return (
       <Box sx={{ p: { xs: 2, md: 4 }, position: "relative" }}>
         <Slider {...settings}>
@@ -237,6 +277,32 @@ export default function RecipeListPage() {
                   objectFit: "cover",
                 }}
               />
+
+              {/* Left Orange Gradient Overlay */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: 0, top: 0,
+                  bottom: 0,
+                  width: { xs: '30%', md: '25%' },
+                  background: 'linear-gradient(to right, rgba(255,111,0,0.7), transparent)',
+                  zIndex: 1,
+                }}
+              />
+
+              {/* Right Orange Gradient Overlay */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: { xs: '30%', md: '25%' },
+                  background: 'linear-gradient(to left, rgba(255,111,0,0.7), transparent)',
+                  zIndex: 1,
+                }}
+              />
+
               <Box
                 sx={{
                   position: "absolute",
@@ -274,37 +340,117 @@ export default function RecipeListPage() {
   return (
     <Box>
       {/* Navbar */}
-      <AppBar position="static" color="transparent" elevation={0}>
-        <Toolbar sx={{ justifyContent: "space-between" }}>
-          <Stack direction="row" spacing={4} alignItems="center">
-            <Typography
-              variant="h5"
-              sx={{ fontWeight: "bold", color: "#F57C00" }}
-            >
-              CookCraft
-            </Typography>
-            <Typography>Home</Typography>
-            <Typography sx={{ color: "#F57C00" }}>Recipes</Typography>
-            <Typography>About</Typography>
-            <Typography>Contact us</Typography>
-          </Stack>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Button variant="contained" sx={{ bgcolor: "#F57C00" }}>
-              Create Post
-            </Button>
-            {/* <NotificationsIcon /> */}
+      <AppBar position="sticky" sx={{ backgroundColor: 'white', color: 'black', boxShadow: '0 4px 12px rgba(255, 111, 0, 0.2)', }}>
+        {/* Toolbar space-around  */}
+        <Toolbar sx={{ justifyContent: 'space-around', alignItems: 'center' }}>
+
+          {/* Logo */}
+          <Typography variant="h6" sx={{ color: '#ff6f00', fontWeight: 'bold' }}>
+
+            COOKCRAFT
+
+          </Typography>
+
+          {/* Navigation Links */}
+          <Box>
+            <Link href="/home" passHref>
+              <Button sx={{ color: '#ff6f00', mx: 1, }}>Home</Button>
+            </Link>
+            <Link href="/recipes" passHref>
+              <Button sx={{
+                color: 'black', mx: 1,
+                transition: 'transform 0.3s',
+                '&:hover': {
+                  color: '#ff6f00',
+                  transform: 'translateY(-3px)',
+                }
+              }}>Recipes</Button>
+            </Link>
+            <Link href="/about" passHref>
+              <Button sx={{
+                color: 'black', mx: 1,
+                transition: 'transform 0.3s',
+                '&:hover': {
+                  color: '#ff6f00',
+                  transform: 'translateY(-3px)',
+                }
+              }}>About</Button>
+              {/* textTransform: 'none' ဆိုစာလုံး အသေးရေးလို့ရ */}
+            </Link>
+          </Box>
+
+          {/*  Action Icons */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Link href="/recipes/create" passHref>
+              <Button
+                variant="outlined"
+                startIcon={
+                  <Box
+                    sx={{
+                      backgroundColor: "white",
+                      color: "#ff7f00",
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 20,
+                      height: 20,
+                      fontSize: "16px",
+                    }}
+                  >
+                    <AddIcon fontSize="inherit" />
+                  </Box>
+                }
+                sx={{
+                  textTransform: "none",
+                  backgroundColor: "#ff7f00",
+                  color: "white",
+                  borderRadius: "20px",
+                  paddingY: "6px",
+                  paddingX: "16px",
+                  fontSize: "16px",
+                  fontWeight: 500,
+                  transition: 'transform 0.3s',
+                  "&:hover": {
+                    backgroundColor: "#e86f00",
+                    transform: 'translateY(-3px)',
+                  },
+                }}
+              >
+                Create Post
+              </Button>
+            </Link>
+
+            {/* <Link href="/notifications" passHref>
+                <IconButton sx={{ color:'black' }}>
+                    <NotificationsIcon />
+                </IconButton>
+            </Link> */}
+
+            {/* notifaction */}
             <Avatar
-              sx={{ bgcolor: "#F57C00", cursor: "pointer" }}
+              sx={{
+                bgcolor: "#F57C00", cursor: "pointer",
+                transition: 'transform 0.3s',
+                "&:hover": {
+                  backgroundColor: "#e86f00",
+                  transform: 'translateY(-3px)',
+                },
+              }}
               onClick={handleClickNotification}
             >
               <NotificationsIcon />
             </Avatar>
             <Menu
-              sx={{ p: 2, minWidth: 300 }}
+              sx={{
+                p: 2,
+                minWidth: 300,
+
+              }}
               anchorEl={anchorE2} // Anchors the menu to the clicked element
               open={openNotification} // Controls visibility based on the 'open' state
               onClose={handleCloseNotification} // Closes the menu on outside click/item selection
-              // ... (styling props)
+            // ... (styling props)
             >
               <Box>
                 {notifications.map((notification, index) => [
@@ -312,12 +458,9 @@ export default function RecipeListPage() {
                     key={`item-${notification.id}`}
                     onClick={handleClickNotification}
                     sx={{
-                      alignItems: "flex-start",
-                      px: 2,
-                      py: 1.5,
-                      gap: 1.5,
+
                       "&:hover": {
-                        backgroundColor: "#f9f9f9",
+                        backgroundColor: "#ff9f00",
                       },
                     }}
                   >
@@ -358,7 +501,7 @@ export default function RecipeListPage() {
                       <Box sx={{ flexGrow: 1 }}>
                         <Typography variant="body2">
                           {notification.type === "comment" ||
-                          notification.type === "like" ? (
+                            notification.type === "like" ? (
                             <>
                               <Typography
                                 component="span"
@@ -407,40 +550,136 @@ export default function RecipeListPage() {
                 ])}
               </Box>
             </Menu>
-            {/* Profile */}
-            <Avatar
-              sx={{ bgcolor: "#F57C00", cursor: "pointer" }}
-              onClick={handleClickProfile}
-            >
-              K
-            </Avatar>
+
+            <Link href="/profile" passHref style={{ textDecoration: 'none' }}>
+              <Avatar sx={{
+                bgcolor: '#ff7f00', cursor: 'pointer',
+                transition: 'transform 0.3s',
+                "&:hover": {
+                  backgroundColor: "#e86f00",
+                  transform: 'translateY(-3px)',
+                },
+              }}>K</Avatar>
+            </Link>
+
+            {/* navbarmore */}
+            <IconButton color="inherit" onClick={handleClickMore}>
+              <MoreVertIcon />
+            </IconButton>
             <Menu
-              anchorEl={anchorEl}
-              open={openProfile}
-              onClose={handleCloseProfile}
+              anchorEl={anchorElMore}
+              open={openMore}
+              onClose={handleCloseMore}
+              PaperProps={{
+                elevation: 4,
+                sx: {
+                  borderRadius: 2,
+                  mt: 1,
+                  minWidth: 180,
+                  bgcolor: "white",
+                },
+              }}
+              transformOrigin={{ horizontal: "right", vertical: "top" }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
-              <Box sx={{ p: 2, minWidth: 220 }}>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <Avatar sx={{ bgcolor: "#F57C00" }}>K</Avatar>
-                  <Box>
-                    <Typography fontWeight="bold">Kaung Htet Lin</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      kaung@gmail.com
-                    </Typography>
-                  </Box>
-                </Stack>
-              </Box>
-              <MenuItem onClick={handleCloseProfile}>
-                <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit Profile
+              <MenuItem
+                onClick={() => {
+                  handleCloseMore();
+                  handleOpenLogoutDialog();
+                  console.log("Edit Profile clicked");
+                }}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#ff9f00",
+                  },
+                }}
+              >
+                <ListItemIcon>
+                  <EditIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Edit Profile" />
               </MenuItem>
-              <MenuItem onClick={handleCloseProfile}>
-                <HistoryIcon fontSize="small" sx={{ mr: 1 }} /> History
+              <MenuItem
+                onClick={() => {
+                  handleCloseMore();
+                  console.log("History clicked");
+                  router.push("/history");  
+                }
+                }
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#ff9f00",
+                  },
+                }}
+              >
+                <ListItemIcon>
+                  <HistoryIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="History" />
               </MenuItem>
-              <MenuItem onClick={handleCloseProfile}>
-                <LogoutIcon fontSize="small" sx={{ mr: 1 }} /> Sign Out
+              <Divider />
+              <MenuItem
+                onClick={() => {
+                  handleCloseMore();
+                   handleOpenLogoutDialog(); 
+                  console.log("Sign Out clicked");
+                }}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#ff9f00",
+                  },
+                }}
+              >
+                <ListItemIcon>
+                  <LogoutIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Sign Out" />
               </MenuItem>
             </Menu>
-          </Stack>
+
+            <Dialog
+              open={openLogoutDialog}
+              onClose={handleCloseLogoutDialog}
+              aria-labelledby="logout-dialog-title"
+              aria-describedby="logout-dialog-description"
+            >
+              <DialogTitle id="logout-dialog-title" sx={{ textAlign: "center" }}>
+                <WarningAmberIcon sx={{ color: "#ff7f00", fontSize: 50 }} />
+              </DialogTitle>
+
+              <DialogContent sx={{ textAlign: "center" }}>
+                <Typography variant="h6" gutterBottom>
+                  Are you sure?
+                </Typography>
+                <Typography variant="body2">
+                  You want to log out?
+                </Typography>
+              </DialogContent>
+
+              <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={handleCloseLogoutDialog}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleConfirmLogout}
+                  autoFocus
+                  
+                >
+                  Log Out
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+
+
+          </Box>
+
         </Toolbar>
       </AppBar>
 
@@ -450,14 +689,36 @@ export default function RecipeListPage() {
 
         {/* Search + Categories */}
         <Box mt={5}>
-          <Typography variant="h6" textAlign="center">
+          <Typography variant="h4" textAlign="center"
+            sx={{ fontWeight: 'bold', color: '#ff6f00' }}
+          >
             What to Cook?
           </Typography>
+          {/* search */}
           <Stack direction="row" justifyContent="center" mt={2}>
             <TextField
+              variant="outlined"
               placeholder="Search"
               fullWidth
-              sx={{ maxWidth: 600, borderRadius: 30, borderColor: "#d9d9d9" }}
+              sx={{
+                maxWidth: 600,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '30px',
+                  backgroundColor: 'white',
+                  borderColor: '#ff6f00',
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#ff6f00',
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#ff6f00',
+                    borderWidth: '1.5px',
+                  }
+                },
+                '&:hover': {
+                  borderColor: '#ff6f00',
+                }
+              }}
+
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
