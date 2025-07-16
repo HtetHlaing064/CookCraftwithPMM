@@ -142,19 +142,20 @@ export default function Recipe() {
                     {/* Navigation Links */}
                     <Box>
                         <Link href="/home" passHref>
-                            <Button sx={{ color: 'black',
-                                 mx: 1,
-                                  transition: 'transform 0.3s',
+                            <Button sx={{
+                                color: 'black',
+                                mx: 1,
+                                transition: 'transform 0.3s',
                                 '&:hover': {
                                     color: '#ff6f00',
                                     transform: 'translateY(-3px)',
                                 }
-                                 }}>Home</Button>
+                            }}>Home</Button>
                         </Link>
                         <Link href="/recipes" passHref>
                             <Button sx={{
                                 color: '#ff6f00', mx: 1,
-                                
+
                             }}>Recipes</Button>
                         </Link>
                         <Link href="/about" passHref>
@@ -166,6 +167,18 @@ export default function Recipe() {
                                     transform: 'translateY(-3px)',
                                 }
                             }}>About</Button>
+                            {/* textTransform: 'none' ဆိုစာလုံး အသေးရေးလို့ရ */}
+                        </Link>
+
+                        <Link href="/contact" passHref>
+                            <Button sx={{
+                                color: 'black', mx: 1,
+                                transition: 'transform 0.3s',
+                                '&:hover': {
+                                    color: '#ff6f00',
+                                    transform: 'translateY(-3px)',
+                                }
+                            }}>Contact Us</Button>
                             {/* textTransform: 'none' ဆိုစာလုံး အသေးရေးလို့ရ */}
                         </Link>
                     </Box>
@@ -394,7 +407,7 @@ export default function Recipe() {
                                 onClick={() => {
                                     handleCloseMore();
                                     console.log("History clicked");
-                                    router.push("/history");  
+                                    router.push("/history");
                                 }
                                 }
                                 sx={{

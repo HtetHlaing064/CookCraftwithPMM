@@ -281,11 +281,23 @@ const handlePageChange = (page) => {
               }}>About</Button>
               {/* textTransform: 'none' ဆိုစာလုံး အသေးရေးလို့ရ */}
             </Link>
+
+             <Link href="/contact" passHref>
+                            <Button sx={{
+                                color: 'black', mx: 1,
+                                transition: 'transform 0.3s',
+                                '&:hover': {
+                                    color: '#ff6f00',
+                                    transform: 'translateY(-3px)',
+                                }
+                            }}>Contact Us</Button>
+                            {/* textTransform: 'none' ဆိုစာလုံး အသေးရေးလို့ရ */}
+                        </Link>
           </Box>
 
           {/*  Action Icons */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Link href="/recipes/create" passHref>
+            {/* <Link href="/recipes/create" passHref>
               <Button
                 variant="outlined"
                 startIcon={
@@ -323,7 +335,7 @@ const handlePageChange = (page) => {
               >
                 Create Post
               </Button>
-            </Link>
+            </Link> */}
 
             {/* <Link href="/notifications" passHref>
                 <IconButton sx={{ color:'black' }}>

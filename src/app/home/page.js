@@ -25,6 +25,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Pagination,
 
 } from "@mui/material";
 
@@ -47,6 +48,7 @@ import Badge from "@mui/material/Badge";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddIcon from '@mui/icons-material/Add';
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 
 export default function RecipeListPage() {
@@ -61,7 +63,7 @@ export default function RecipeListPage() {
   const handleClickNotification = (event) => setAnchorE2(event.currentTarget);
   const handleCloseProfile = () => setAnchorEl(null);
   const handleCloseNotification = () => setAnchorE2(null);
-  const [currentPage, setCurrentPage] = useState(2);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -69,7 +71,16 @@ export default function RecipeListPage() {
     // You can also fetch data for this page here
   };
 
-  const categories = ["All", "Breakfast", "Lunch", "Dinner"];
+  // State ကို ထပ်ထည့်ပါ
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  // Filtered recipes function
+  const getFilteredRecipes = () => {
+    if (selectedCategory === "All") return recipes;
+    return recipes.filter(recipe => recipe.category === selectedCategory);
+  };
+
+  // recipses data
   const recipes = [
     {
       id: 1,
@@ -77,6 +88,7 @@ export default function RecipeListPage() {
       author: "The cooking channel",
       rating: 4.6,
       image: "/images/food1.jpg",
+      category: "Breakfast"
     },
     {
       id: 2,
@@ -84,6 +96,7 @@ export default function RecipeListPage() {
       author: "Schar's kitchen",
       rating: 4.6,
       image: "/images/food2.jpg",
+      category: "Lunch"
     },
     {
       id: 3,
@@ -91,6 +104,7 @@ export default function RecipeListPage() {
       author: "Pasta da Italia",
       rating: 4.6,
       image: "/images/food3.jpg",
+      category: "Dinner"
     },
     {
       id: 4,
@@ -98,6 +112,7 @@ export default function RecipeListPage() {
       author: "The cooking channel",
       rating: 4.6,
       image: "/images/food1.jpg",
+      category: "Breakfast"
     },
     {
       id: 5,
@@ -105,6 +120,7 @@ export default function RecipeListPage() {
       author: "Schar's kitchen",
       rating: 4.6,
       image: "/images/food2.jpg",
+      category: "Dinner"
     },
     {
       id: 6,
@@ -112,6 +128,71 @@ export default function RecipeListPage() {
       author: "Pasta da Italia",
       rating: 4.6,
       image: "/images/food3.jpg",
+      category: "Dinner"
+    },
+    {
+      id: 7,
+      title: "Steamed Sticky Rice",
+      author: "Pasta da Italia",
+      rating: 4.6,
+      image: "/images/food3.jpg",
+      category: "Dinner"
+    },
+    {
+      id: 8,
+      title: "Steamed Sticky Rice",
+      author: "Pasta da Italia",
+      rating: 4.6,
+      image: "/images/food3.jpg",
+      category: "Dinner"
+    },
+    {
+      id: 9,
+      title: "Steamed Sticky Rice",
+      author: "Pasta da Italia",
+      rating: 4.6,
+      image: "/images/food3.jpg",
+      category: "Dinner"
+    },
+    {
+      id: 10,
+      title: "Steamed Sticky Rice",
+      author: "Pasta da Italia",
+      rating: 4.6,
+      image: "/images/food3.jpg",
+      category: "Dinner"
+    },
+    {
+      id: 11,
+      title: "Steamed Sticky Rice",
+      author: "Pasta da Italia",
+      rating: 4.6,
+      image: "/images/food3.jpg",
+      category: "Dinner"
+    },
+    {
+      id: 12,
+      title: "Steamed Sticky Rice",
+      author: "Pasta da Italia",
+      rating: 4.6,
+      image: "/images/food3.jpg",
+      category: "Dinner"
+    },
+    {
+      id: 13,
+      title: "Steamed Sticky Rice",
+      author: "Pasta da Italia",
+      rating: 4.6,
+      image: "/images/food3.jpg",
+      category: "Dinner"
+    },
+    {
+      id: 14,
+      title: "Steamed Sticky Rice",
+      author: "Pasta da Italia",
+      rating: 4.6,
+      image: "/images/food3.jpg",
+      category: "Dinner"
     },
   ];
   // navbar more 
@@ -134,7 +215,7 @@ export default function RecipeListPage() {
   const handleConfirmLogout = () => {
     setOpenLogoutDialog(false);
     console.log("User confirmed log out");
-    router.push("/"); 
+    router.push("/");
     // သင့် Log Out Logic ထည့်ပါ (ဥပမာ: router.push("/login"))
   };
 
@@ -377,6 +458,18 @@ export default function RecipeListPage() {
               }}>About</Button>
               {/* textTransform: 'none' ဆိုစာလုံး အသေးရေးလို့ရ */}
             </Link>
+            <Link href="/contact" passHref>
+              <Button sx={{
+                color: 'black', mx: 1,
+                transition: 'transform 0.3s',
+                '&:hover': {
+                  color: '#ff6f00',
+                  transform: 'translateY(-3px)',
+                }
+              }}>Contact Us</Button>
+              {/* textTransform: 'none' ဆိုစာလုံး အသေးရေးလို့ရ */}
+            </Link>
+
           </Box>
 
           {/*  Action Icons */}
@@ -603,7 +696,7 @@ export default function RecipeListPage() {
                 onClick={() => {
                   handleCloseMore();
                   console.log("History clicked");
-                  router.push("/history");  
+                  router.push("/history");
                 }
                 }
                 sx={{
@@ -621,7 +714,7 @@ export default function RecipeListPage() {
               <MenuItem
                 onClick={() => {
                   handleCloseMore();
-                   handleOpenLogoutDialog(); 
+                  handleOpenLogoutDialog();
                   console.log("Sign Out clicked");
                 }}
                 sx={{
@@ -669,7 +762,7 @@ export default function RecipeListPage() {
                   color="primary"
                   onClick={handleConfirmLogout}
                   autoFocus
-                  
+
                 >
                   Log Out
                 </Button>
@@ -732,7 +825,7 @@ export default function RecipeListPage() {
 
         <Stack direction="row" spacing={4} mt={4}>
           {/* Category Filters */}
-          <Stack spacing={2}>
+          {/* <Stack spacing={2}>
             <Typography variant="h6">Categories</Typography>
             {categories.map((cat, idx) => (
               <Button
@@ -743,102 +836,248 @@ export default function RecipeListPage() {
                 {cat}
               </Button>
             ))}
+
+          </Stack> */}
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Categories</Typography>
+            <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+              <Button
+                variant={selectedCategory === "All" ? "contained" : "outlined"}
+                onClick={() => setSelectedCategory("All")}
+                sx={{
+                  textTransform: "none",
+                  borderRadius: 2,
+                  backgroundColor: selectedCategory === "All" ? '#ff6f00' : 'transparent',
+                  color: selectedCategory === "All" ? 'white' : 'inherit',
+                   transition: 'transform 0.5s',
+                  transition: 'all 0.5s ease',
+                  '&:hover': {
+                    backgroundColor: selectedCategory === "All" ? '#e65100' : '#fff3e0',
+                    transform: 'translateY(-5px)',
+                  }
+                }}
+              >
+                All
+              </Button>
+
+              <Button
+                variant={selectedCategory === "Breakfast" ? "contained" : "outlined"}
+                onClick={() => setSelectedCategory("Breakfast")}
+                sx={{
+                  textTransform: "none",
+                  borderRadius: 2,
+                  backgroundColor: selectedCategory === "Breakfast" ? '#ff6f00' : 'transparent',
+                  color: selectedCategory === "Breakfast" ? 'white' : 'inherit',
+                  transition: 'transform 0.5s',
+                  transition: 'all 0.5s ease',
+                  '&:hover': {
+                    backgroundColor: selectedCategory === "Breakfast" ? '#e65100' : '#fff3e0',
+                    transform: 'translateY(-5px)',
+                  }
+                }}
+              >
+                Breakfast
+              </Button>
+
+              <Button
+                variant={selectedCategory === "Lunch" ? "contained" : "outlined"}
+                onClick={() => setSelectedCategory("Lunch")}
+                sx={{
+                  textTransform: "none",
+                  borderRadius: 2,
+                  backgroundColor: selectedCategory === "Lunch" ? '#ff6f00' : 'transparent',
+                  color: selectedCategory === "Lunch" ? 'white' : 'inherit',
+                  transition: 'transform 0.5s',
+                  transition: 'all 0.5s ease',
+                  '&:hover': {
+                    backgroundColor: selectedCategory === "Lunch" ? '#e65100' : '#fff3e0',
+                    transform: 'translateY(-5px)',
+                  }
+                }}
+              >
+                Lunch
+              </Button>
+
+              <Button
+                variant={selectedCategory === "Dinner" ? "contained" : "outlined"}
+                onClick={() => setSelectedCategory("Dinner")}
+                sx={{
+                  textTransform: "none",
+                  borderRadius: 2,
+                  backgroundColor: selectedCategory === "Dinner" ? '#ff6f00' : 'transparent',
+                  color: selectedCategory === "Dinner" ? 'white' : 'inherit',
+                  transition: 'transform 0.5s',
+                  transition: 'all 0.5s ease',
+                  '&:hover': {
+                    backgroundColor: selectedCategory === "Dinner" ? '#e65100' : '#fff3e0',
+                    transform: 'translateY(-5px)',
+                  }
+                }}
+              >
+                Dinner
+              </Button>
+            </Box>
           </Stack>
+
 
           {/* Recipe Cards */}
           <Box flex={1}>
-            <Grid container spacing={2}>
-              {recipes.map(
-                (
-                  recipe // Use displayedRecipes here
-                ) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={recipe.id}>
-                    <Card
-                      sx={{
-                        maxWidth: 345,
-                        m: "auto",
-                        borderRadius: 2,
-                        boxShadow: 3,
-                      }}
-                    >
+            {/* Flex container - Grid မသုံးဘဲ Flexbox နဲ့ layout ဖော်မယ် */}
+            <Box sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '16px',
+              justifyContent: 'center',
+              mb: 4
+            }}>
+              {getFilteredRecipes()
+                .slice((currentPage - 1) * 12, currentPage * 12)
+                .map((recipe) => (
+                  <Box key={recipe.id} sx={{
+                    flex: '0 0 calc(33.333% - 16px)', // 3 items per row
+                    maxWidth: 'calc(33.333% - 16px)',
+                    minWidth: '280px', // Minimum width for mobile
+                    '@media (max-width: 900px)': {
+                      flex: '0 0 calc(50% - 16px)', // 2 items per row on tablet
+                      maxWidth: 'calc(50% - 16px)'
+                    },
+                    '@media (max-width: 600px)': {
+                      flex: '0 0 100%', // 1 item per row on mobile
+                      maxWidth: '100%'
+                    }
+                  }}>
+                    {/* <Link href={`/recipes/detail/${recipe.id}`} passHref style={{ textDecoration: 'none' }}> */}
+                    <Link href="/recipes/detail" passHref style={{ textDecoration: 'none' }}>
+
+                    <Card sx={{
+
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                      borderRadius: '16px',
+                      border: '3px solid transparent',
+                      transition: 'transform 0.5s',
+                      transition: 'all 0.5s ease',
+                      '&:hover': {
+                        transform: 'translateY(-5px)',
+                        borderColor: '#ff6f00',
+                        boxShadow: '0 4px 12px rgba(255, 111, 0, 0.9)',
+                      },
+                       cursor: 'pointer' // Add cursor pointer to indicate it's clickable
+                    }}>
                       <CardMedia
                         component="img"
-                        height="180" // Increased height slightly for better image display
+                        height="180"
                         image={recipe.image}
                         alt={recipe.title}
                         sx={{ objectFit: "cover" }}
                       />
                       <CardContent>
-                        <Typography
-                          gutterBottom
-                          variant="h6"
-                          component="div"
-                          sx={{ fontSize: "1rem", fontWeight: "bold" }}
-                        >
+                        <Typography gutterBottom variant="h6" sx={{ fontWeight: "bold" }}>
                           {recipe.title}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          By {recipe.author}
-                        </Typography>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", mt: 1 }}
-                        >
-                          <StarIcon sx={{ color: "orange", fontSize: 16 }} />
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ ml: 0.5 }}
-                          >
-                            {recipe.rating}
+                        {/* Author and rating in one line */}
+                        <Box sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          mt: 1
+                        }}>
+                          <Typography variant="body2" color="text.secondary">
+                            By {recipe.author}
                           </Typography>
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <StarIcon sx={{ color: "orange", fontSize: 16 }} />
+                            <Typography variant="body2" sx={{ ml: 0.5 }}>
+                              {recipe.rating}
+                            </Typography>
+                          </Box>
                         </Box>
                       </CardContent>
                     </Card>
-                  </Grid>
-                )
-              )}
-            </Grid>
+                     </Link>
+                  </Box>
+                ))}
+            </Box>
 
-            {/* Pagination */}
-            <Stack direction="row" justifyContent="center" spacing={1} mt={4}>
-              <Chip
-                label="Previous"
-                variant="outlined"
-                size="small"
-                onClick={() =>
-                  currentPage > 1 && handlePageChange(currentPage - 1)
-                }
-                disabled={currentPage === 1}
+            {/* Pagination  */}
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Pagination
+                count={Math.ceil(getFilteredRecipes().length / 12)}
+                page={currentPage}
+                onChange={(event, value) => setCurrentPage(value)}
+                color="primary"
+                sx={{
+                  '& .MuiPaginationItem-root': {
+                    borderRadius: 2,
+                  },
+                  '& .Mui-selected': {
+                    backgroundColor: '#ff6f00',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: '#e65100'
+                    }
+                  }
+                }}
               />
+            </Box>
 
-              {[1, 2, 3].map((n) => (
-                <Chip
-                  key={n}
-                  label={n}
-                  variant={n === currentPage ? "filled" : "outlined"}
-                  color={n === currentPage ? "default" : "primary"}
-                  size="small"
-                  onClick={() => handlePageChange(n)}
-                />
-              ))}
-
-              <Typography variant="body2" sx={{ px: 1 }}>
-                ... 10
-              </Typography>
-
-              <Chip
-                label="Next"
-                color="warning"
-                size="small"
-                onClick={() =>
-                  currentPage < 10 && handlePageChange(currentPage + 1)
-                }
-                disabled={currentPage === 10}
-              />
-            </Stack>
           </Box>
+
+
         </Stack>
+
       </Container>
+
+      {/* footer */}
+       <Box 
+      component="footer" 
+      sx={{
+        backgroundColor: '#ff6f00',
+        color: 'white',
+        py: 3,
+        px: 2,
+        borderTop: '1px solid #ffe0b2',
+        mt: 4,
+        textAlign: 'center'
+      }}
+    >
+      <Container maxWidth="lg">
+        {/* Brand name with subtle highlight */}
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            color: 'white', 
+            fontWeight: 'bold',
+            mb: 1
+          }}
+        >
+          COOKCRAFT
+        </Typography>
+        
+        {/* Short tagline */}
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          Where culinary creativity meets community
+        </Typography>
+        
+        {/* Copyright with love icon */}
+        <Typography variant="caption" sx={{ 
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 0.5
+        }}>
+          © {new Date().getFullYear()} Made with 
+          <FavoriteIcon sx={{ color: 'white', fontSize: '14px' }} /> 
+          in Myanmar
+        </Typography>
+      </Container>
+    </Box>
+
+
     </Box>
   );
 }
