@@ -7,6 +7,7 @@ import Link from 'next/link';
 import React from 'react';
 import Head from 'next/head';
 
+
 // MUI Components
 import {
   AppBar,
@@ -20,7 +21,7 @@ import {
   CardContent,
   TextField,
   Link as MuiLink, Divider,
-  IconButton 
+  IconButton
 } from '@mui/material';
 
 import { Facebook } from '@mui/icons-material';
@@ -41,150 +42,143 @@ import HealthAndSafetyOutlinedIcon from '@mui/icons-material/HealthAndSafetyOutl
 import Slider from 'react-slick';
 
 // Navbar
-const Navbar = ({ scrollToRecipes, scrollToAbout }) => {
-
- // Scroll to top function for Home link
+// const Navbar = ({ scrollToRecipes, scrollToAbout, scrollToContact, activeSection, setActiveSection }) => {
+//   // 2. scrollToTop function ကိုပြင်ဆင်ချက်
 //   const scrollToTop = () => {
-//     if (typeof window !== 'undefined') {
-//       window.scrollTo({
-//         top: 0,
-//         behavior: 'smooth'
-//       });
-//     }
-// };
+//     window.scrollTo({
+//       top: 0,
+//       behavior: 'smooth',
+//       // ဒီ option နှစ်ခုကိုထပ်ထည့်ပေးပါ
+//       block: 'start',
+//       inline: 'nearest'
+//     });
+//     setActiveSection('home');
+//   };
 
- const scrollToTop = () => {
-    // All three methods to ensure it works
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
-    document.body.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+// Navbar component ထဲက ဒီ function ကို ဖယ်လိုက်ပါ
 
-  
-  // Scroll to footer function for Contact Us link
-  const scrollToContact = () => {
-    if (typeof window !== 'undefined') {
-      // Try multiple methods to ensure scroll works
-      const footer = document.querySelector('footer');
-      if (footer) {
-        // Method 1: Standard scrollIntoView
-        footer.scrollIntoView({ 
-          behavior: 'smooth',
-          block: 'start'
-        });
 
-        // Fallback method if above doesn't work
-        setTimeout(() => {
-          window.scrollTo({
-            top: document.body.scrollHeight,
-            behavior: 'smooth'
-          });
-        }, 300);
-      }
-    }
-  };
 
+const Navbar = ({ scrollToTop, scrollToRecipes, scrollToAbout, scrollToContact, activeSection, setActiveSection }) => {
   return (
     <AppBar
-    position="sticky"
-    sx={{
-      backgroundColor: 'white',
-      color: 'black',
-      // boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      boxShadow: '0 4px 12px rgba(255, 111, 0, 0.2)',
-    }}
-  >
-    <Toolbar sx={{ justifyContent: 'space-around', alignItems: 'center' }}>
-      <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#ff6f00' }}>
-        COOKCRAFT
-      </Typography>
-      <Box sx={{ display: { md: 'flex' }, gap: 2 }}>
+      position="sticky"
+      sx={{
+        backgroundColor: 'white',
+        color: 'black',
+        // boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        boxShadow: '0 4px 12px rgba(255, 111, 0, 0.2)',
+      }}
+    >
+      <Toolbar sx={{ justifyContent: 'space-around', alignItems: 'center' }}>
+        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#ff6f00' }}>
+          COOKCRAFT
+        </Typography>
+        <Box sx={{ display: { md: 'flex' }, gap: 2 }}>
 
-       {/* Home link - scrolls to top */}
-          <Button 
-            color="inherit" 
-            onClick={scrollToTop}
-            sx={{ cursor: 'pointer' }}
+          {/* Home */}
+          <Button
+            color="inherit"
+            onClick={() => {
+              scrollToTop();
+              
+              setActiveSection('home');
+            }}
+            sx={{
+              cursor: 'pointer',
+              color: activeSection === 'home' ? '#ff6f00' : 'inherit',
+              // fontWeight: activeSection === 'home' ? 'bold' : 'normal',
+            }}
           >
             Home
           </Button>
+
           {/* <Button color="inherit" component={Link} href="#">Home</Button> */}
-        
-        {/* <Button color="inherit" component={Link} href="#popular-recipes">Recipes</Button> */}
-        <Button 
-          color="inherit" 
-          onClick={scrollToRecipes}
-          sx={{ cursor: 'pointer' }}
-        >
-          Recipes
-        </Button>
 
-        {/* <Button color="inherit" component={Link} href="#why-choose-us">About</Button> */}
-      <Button 
-          color="inherit" 
-          onClick={scrollToAbout}
-          sx={{ cursor: 'pointer' }}
-        >
-          About
-        </Button>
-
-        
-          {/* Contact Us link - scrolls to footer */}
-          <Button 
-            color="inherit" 
-            onClick={scrollToContact}
-            sx={{ 
+          {/* Recipes */}
+          <Button
+            color="inherit"
+            onClick={scrollToRecipes}
+            sx={{
               cursor: 'pointer',
-              color: '#ff7b00'
+              color: activeSection === 'recipes' ? '#ff6f00' : 'inherit',
+              // fontWeight: activeSection === 'recipes' ? 'bold' : 'normal',
+            }}
+          >
+            Recipes
+          </Button>
+
+          {/* About */}
+          <Button
+            color="inherit"
+            onClick={scrollToAbout}
+            sx={{
+              cursor: 'pointer',
+              color: activeSection === 'about' ? '#ff6f00' : 'inherit',
+              // fontWeight: activeSection === 'about' ? 'bold' : 'normal',
+            }}
+          >
+            About
+          </Button>
+
+
+          {/* Contact Us */}
+          <Button
+            color="inherit"
+            onClick={scrollToContact}
+            sx={{
+              cursor: 'pointer',
+              color: activeSection === 'contact' ? '#ff6f00' : 'inherit',
+              // fontWeight: activeSection === 'contact' ? 'bold' : 'normal',
             }}
           >
             Contact us
           </Button>
-        
-      </Box>
 
-      <Box sx={{ display: 'flex', gap: 1 }}>
-        <Link href="/users/sign-up" passHref>
-          <Button variant="contained" sx={{
-            backgroundColor: '#ff6f00',
-            color: 'white',
-            borderRadius: '20px',
-            textTransform: 'none',
-            transition: 'transform 0.3s',
-            
-            '&:hover': {
-              backgroundColor: '#e65100',
-              transform: 'translateY(-3px)',
-              boxShadow: '0 4px 12px rgba(255, 111, 0, 0.3)',
-            }
-          }}>
-            Sign up
-          </Button>
-        </Link>
-        <Link href="/users/sign-in" passHref>
-          <Button variant="outlined" sx={{
-            borderColor: '#ff7b00',
-            color: '#ff6f00',
-            borderRadius: '20px',
-            textTransform: 'none',
-            transition: 'transform 0.3s',
-            // transition: 'border-color 0.5s ease',
-            '&:hover': {
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Link href="/users/sign-up" passHref>
+            <Button variant="contained" sx={{
               backgroundColor: '#ff6f00',
               color: 'white',
-              transform: 'translateY(-3px)',
-              boxShadow: '0 4px 12px rgba(255, 111, 0, 0.3)',
-            }
-          }}>
-            Log in
-          </Button>
-        </Link>
-      </Box>
-    </Toolbar>
-  </AppBar>
+              borderRadius: '20px',
+              textTransform: 'none',
+              transition: 'transform 0.3s',
+
+              '&:hover': {
+                backgroundColor: '#e65100',
+                transform: 'translateY(-3px)',
+                boxShadow: '0 4px 12px rgba(255, 111, 0, 0.3)',
+              }
+            }}>
+              Sign up
+            </Button>
+          </Link>
+          <Link href="/users/sign-in" passHref>
+            <Button variant="outlined" sx={{
+              borderColor: '#ff7b00',
+              color: '#ff6f00',
+              borderRadius: '20px',
+              textTransform: 'none',
+              transition: 'transform 0.3s',
+              // transition: 'border-color 0.5s ease',
+              '&:hover': {
+                backgroundColor: '#ff6f00',
+                color: 'white',
+                transform: 'translateY(-3px)',
+                boxShadow: '0 4px 12px rgba(255, 111, 0, 0.3)',
+              }
+            }}>
+              Log in
+            </Button>
+          </Link>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 
-  
+
 };
 
 // Carousel Arrows
@@ -367,14 +361,16 @@ const TasteOfFood = () => {
   ];
 
   return (
-    <Box sx={{ 
+    <Box sx={{
       py: 7 //---------------------------------------------------
 
-     }}> 
+    }}>
       <Container maxWidth="lg">
-        <Typography variant="h4" align="center" sx={{ fontWeight: 'bold', 
+        <Typography variant="h4" align="center" sx={{
+          fontWeight: 'bold',
           mb: 6, //------------------------------------------------
-           color: '#ff6f00' }}>
+          color: '#ff6f00'
+        }}>
           Taste of Food
         </Typography>
         <Grid container spacing={3} sx={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }} >
@@ -659,13 +655,13 @@ const CallToActionSection = () => {
         zIndex: 1
       }
     }}>
-      <Box sx={{ 
+      <Box sx={{
         position: 'relative',
         zIndex: 2,
         maxWidth: '600px',
         px: 3
       }}>
-        <Typography variant="h4" sx={{ 
+        <Typography variant="h4" sx={{
           fontWeight: 'bold',
           mb: 3,
           textShadow: '0 2px 4px rgba(0,0,0,0.5)'
@@ -673,8 +669,8 @@ const CallToActionSection = () => {
           Learn new recipes, share your own creations, join CookCraft
         </Typography>
         <Link href="/users/sign-up" passHref>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             size="large"
             sx={{
               backgroundColor: '#ff6f00',
@@ -689,7 +685,7 @@ const CallToActionSection = () => {
               '&:hover': {
                 backgroundColor: '#e65100',
                 transform: 'translateY(-2px)',
-                 boxShadow: '0 4px 12px rgba(255, 111, 0, 0.3)',
+                boxShadow: '0 4px 12px rgba(255, 111, 0, 0.3)',
               },
               transition: 'all 0.3s ease'
             }}
@@ -702,136 +698,7 @@ const CallToActionSection = () => {
   );
 };
 
-// Footer
-// Footer
-// const Footer = () => {
-//   return (
-//     <Box 
-//       component="footer"
-//       sx={{
-//         backgroundColor: '#f5f5f5',
-//         color: '#333',
-//         py: 4,
-//         px: 2,
-//         textAlign: 'center',
-//         fontFamily: 'Arial, sans-serif'
-//       }}
-//     >
-//       <Container maxWidth="md">
-//         {/* Contact Us Section */}
-//         <Box sx={{ mb: 4 }}>
-//           <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-//             Contact Us
-//           </Typography>
-//           <Typography variant="body2" sx={{ mb: 2 }}>
-//             Enter your email to receive relevant messaging tips.
-//           </Typography>
-//           <Box 
-//             component="form"
-//             sx={{
-//               display: 'flex',
-//               justifyContent: 'center',
-//               gap: 1,
-//               maxWidth: '400px',
-//               margin: '0 auto'
-//             }}
-//           >
-//             <TextField
-//               variant="outlined"
-//               placeholder="Email"
-//               size="small"
-//               fullWidth
-//               sx={{
-//                 '& .MuiOutlinedInput-root': {
-//                   borderRadius: '4px',
-//                   backgroundColor: 'white'
-//                 }
-//               }}
-//             />
-//             <Button 
-//               variant="contained"
-//               sx={{
-//                 backgroundColor: '#ff6f00',
-//                 color: 'white',
-//                 borderRadius: '4px',
-//                 '&:hover': {
-//                   backgroundColor: '#e65100'
-//                 }
-//               }}
-//             >
-//               Send
-//             </Button>
-//           </Box>
-//         </Box>
 
-//         {/* Main Footer Content */}
-//         <Grid container spacing={3} sx={{ mb: 3 }}>
-//           {/* Brand Column */}
-//           <Grid item xs={12} sm={6} md={3}>
-//             <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#ff6f00' }}>
-//               CookCraft
-//             </Typography>
-//             <Typography variant="body2">
-//               Blast with passion for good food
-//             </Typography>
-//           </Grid>
-
-//           {/* Menu Column */}
-//           <Grid item xs={6} sm={3} md={2}>
-//             <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-//               Menu
-//             </Typography>
-//             <Box component="ul" sx={{ listStyle: 'none', pl: 0, mt: 1 }}>
-//               <li><Link href="#" style={{ textDecoration: 'none', color: '#333' }}>Kitchen</Link></li>
-//               <li><Link href="#" style={{ textDecoration: 'none', color: '#333' }}>Taste</Link></li>
-//               <li><Link href="#" style={{ textDecoration: 'none', color: '#333' }}>Recipes</Link></li>
-//             </Box>
-//           </Grid>
-
-//           {/* Chefs Column */}
-//           <Grid item xs={6} sm={3} md={2}>
-//             <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-//               Meet Chefs
-//             </Typography>
-//             <Box component="ul" sx={{ listStyle: 'none', pl: 0, mt: 1 }}>
-//               <li><Link href="#" style={{ textDecoration: 'none', color: '#333' }}>Alice</Link></li>
-//               <li><Link href="#" style={{ textDecoration: 'none', color: '#333' }}>Sweet</Link></li>
-//               <li><Link href="#" style={{ textDecoration: 'none', color: '#333' }}>Anna</Link></li>
-//             </Box>
-//           </Grid>
-
-//           {/* Social Media Column */}
-//           <Grid item xs={6} sm={3} md={2}>
-//             <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-//               Social Media
-//             </Typography>
-//             <Box component="ul" sx={{ listStyle: 'none', pl: 0, mt: 1 }}>
-//               <li>
-//                 <Link 
-//                   href="#" 
-//                   style={{ 
-//                     textDecoration: 'none', 
-//                     color: '#333',
-//                     display: 'flex',
-//                     alignItems: 'center',
-//                     gap: '4px'
-//                   }}
-//                 >
-//                   <Facebook fontSize="small" /> Facebook
-//                 </Link>
-//               </li>
-//             </Box>
-//           </Grid>
-//         </Grid>
-
-//         {/* Copyright */}
-//         <Typography variant="body2" sx={{ color: '#666' }}>
-//           Copyright&copy;cookcraft2018
-//         </Typography>
-//       </Container>
-//     </Box>
-//   );
-// };
 const Footer = () => {
   return (
     <Box
@@ -848,7 +715,7 @@ const Footer = () => {
       <Container maxWidth="lg">
         {/* Newsletter Section */}
         <Box sx={{ textAlign: 'center', mb: 6 }}>
-          <Typography variant="h5" component="h3"  sx={{ fontWeight: 'bold' }}>
+          <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold' }}>
             Contact Us
           </Typography>
           <Typography variant="body1" color="white" >
@@ -869,25 +736,25 @@ const Footer = () => {
               variant="outlined"
               placeholder="Email"
               size="small"
-              sx={{ 
+              sx={{
                 width: { xs: '100%', sm: 300 },
-                border:'2px solid white',
+                border: '2px solid white',
                 backgroundColor: 'white',
-                color:'black',
+                color: 'black',
                 borderRadius: '20px',
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '20px',
                 }
               }}
             />
-            <Button 
-              variant="outlined" 
-              color="white" 
+            <Button
+              variant="outlined"
+              color="white"
               type="submit"
               sx={{
                 borderRadius: '20px',
                 px: 3,
-                 border:'2px solid white',
+                border: '2px solid white',
                 backgroundColor: '#65615C',
                 '&:hover': {
                   backgroundColor: '#e65100',
@@ -918,11 +785,11 @@ const Footer = () => {
             </Typography>
             <Box component="ul" sx={{ listStyle: 'none', pl: 0 }}>
               <li>
-                <MuiLink 
-                variant="body1"
-                  href="#" 
-                  color="white" 
-                  underline="hover" 
+                <MuiLink
+                  variant="body1"
+                  href="#"
+                  color="white"
+                  underline="hover"
                   component={Link}
                   sx={{
                     '&:hover': { color: '#65615C' }
@@ -932,11 +799,11 @@ const Footer = () => {
                 </MuiLink>
               </li>
               <li>
-                <MuiLink 
-                  href="#" 
+                <MuiLink
+                  href="#"
                   variant="body1"
-                  color="white" 
-                  underline="hover" 
+                  color="white"
+                  underline="hover"
                   component={Link}
                   sx={{
                     '&:hover': { color: '#65615C' }
@@ -946,11 +813,11 @@ const Footer = () => {
                 </MuiLink>
               </li>
               <li>
-                <MuiLink 
-                  href="#" 
+                <MuiLink
+                  href="#"
                   variant="body1"
-                  color="white" 
-                  underline="hover" 
+                  color="white"
+                  underline="hover"
                   component={Link}
                   sx={{
                     '&:hover': { color: '#65615C' }
@@ -969,11 +836,11 @@ const Footer = () => {
             </Typography>
             <Box component="ul" sx={{ listStyle: 'none', pl: 0 }}>
               <li>
-                <MuiLink 
-                  href="#" 
+                <MuiLink
+                  href="#"
                   variant="body1"
-                  color="white" 
-                  underline="hover" 
+                  color="white"
+                  underline="hover"
                   component={Link}
                   sx={{
                     '&:hover': { color: '#65615C' }
@@ -983,11 +850,11 @@ const Footer = () => {
                 </MuiLink>
               </li>
               <li>
-                <MuiLink 
-                  href="#" 
+                <MuiLink
+                  href="#"
                   variant="body1"
-                  color="white" 
-                  underline="hover" 
+                  color="white"
+                  underline="hover"
                   component={Link}
                   sx={{
                     '&:hover': { color: '#65615C' }
@@ -997,11 +864,11 @@ const Footer = () => {
                 </MuiLink>
               </li>
               <li>
-                <MuiLink 
-                  href="#" 
+                <MuiLink
+                  href="#"
                   variant="body1"
-                  color="white" 
-                  underline="hover" 
+                  color="white"
+                  underline="hover"
                   component={Link}
                   sx={{
                     '&:hover': { color: '#65615C' }
@@ -1019,31 +886,31 @@ const Footer = () => {
               Social Media
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <IconButton 
-                href="#" 
-                
-                
+              <IconButton
+                href="#"
+
+
                 component={Link}
                 sx={{
-                  
+
                   color: 'white',
-                  '&:hover': { 
+                  '&:hover': {
                     color: '#65615C',
-                    
+
                   }
                 }}
               >
-                 <Facebook />
-                <Typography variant="body1"  sx={{ fontWeight: 'bold' }}>
-                Facebook
-            </Typography>
+                <Facebook />
+                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                  Facebook
+                </Typography>
               </IconButton>
             </Box>
           </Grid>
         </Grid>
 
         {/* Copyright Section */}
-        <Divider sx={{ my: 2, background:'white' }} />
+        <Divider sx={{ my: 2, background: 'white' }} />
         <Box sx={{ textAlign: 'center', pt: 2 }}>
           <Typography variant="body2" color="white">
             Copyright &copy; cookcraft2025
@@ -1057,62 +924,129 @@ const Footer = () => {
 
 // Main Page
 export default function HomePage() {
-
-   const recipesRef = React.useRef(null);
+  const recipesRef = React.useRef(null);
   const aboutRef = React.useRef(null);
+  const footerRef = React.useRef(null);
+  const homeRef = React.useRef(null);
+
+  const [activeSection, setActiveSection] = React.useState('home');
+
+  const scrollToTop = () => {
+   homeRef.current?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'center', 
+    
+  });
+  setActiveSection('home');
+};
 
   const scrollToRecipes = () => {
-    recipesRef.current?.scrollIntoView({ 
+    recipesRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'start'
     });
   };
 
   const scrollToAbout = () => {
-    aboutRef.current?.scrollIntoView({ 
+    aboutRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'start'
     });
   };
 
+  const scrollToContact = () => {
+    footerRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
+  React.useEffect(() => {
+    const sections = [
+      { id: 'home', ref: homeRef }, // Home section
+      { id: 'recipes', ref: recipesRef },
+      { id: 'about', ref: aboutRef },
+      { id: 'contact', ref: footerRef },
+    ];
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      // threshold: 0.5,
+      threshold: [0.3, 0.5, 0.7],
+    };
+
+    // const observerCallback = (entries) => {
+    //   entries.forEach(entry => {
+    //     if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+    //       setActiveSection(entry.target.dataset.section);
+    //     }
+    //   });
+    // };
+
+    const observerCallback = (entries) => {
+      let mostVisible = null;
+      let highestRatio = 0;
+
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio > highestRatio) {
+          highestRatio = entry.intersectionRatio;
+          mostVisible = entry.target.dataset.section;
+        }
+      });
+
+      if (mostVisible) {
+        setActiveSection(mostVisible);
+      }
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    sections.forEach(({ ref, id }) => {
+      if (ref.current) {
+        ref.current.dataset.section = id;
+        observer.observe(ref.current);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
-      <Head>
-        <title>CookCraft - Your Recipe Companion</title>
-        <meta name="description" content="A recipe website built with Next.js and MUI" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      {/* <Navbar /> */}
-      <Navbar scrollToRecipes={scrollToRecipes} scrollToAbout={scrollToAbout} />
+      <Navbar
+       scrollToTop={scrollToTop}
+        scrollToRecipes={scrollToRecipes}
+        scrollToAbout={scrollToAbout}
+        scrollToContact={scrollToContact}
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+      />
 
       <main>
-        <Container>
-          <TrendingSlider />
-        </Container>
+        <div ref={homeRef}>
+          <Container>
+            <TrendingSlider />
+          </Container>
+        </div>
 
         <TasteOfFood />
 
-        {/* <PopularRecipes /> */}
         <div ref={recipesRef}>
           <PopularRecipes />
         </div>
 
-        
-        
-
-        {/* <WhyChooseUs /> */}
         <div ref={aboutRef}>
           <WhyChooseUs />
         </div>
 
-       
-        
         <CallToActionSection />
 
-         <Footer />
-
+        <div ref={footerRef}>
+          <Footer />
+        </div>
       </main>
     </>
   );
 }
+

@@ -167,7 +167,7 @@ export default function SignUp() {
             fullWidth
             variant="contained"
             type="submit"
-            sx={{ mt: 2, backgroundColor: "#f7931e", color: "#fff" }}
+            sx={{ mt: 2, backgroundColor: "#ff6f00", color: "#fff" }}
             disabled={isSubmitting}
           >
             {isSubmitting ? "Signing Up..." : "Sign Up"}

@@ -8,6 +8,8 @@ import AppLayout from "./components/AppLayout";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import StyledRoot from "./StyledRoot";
 import SessionWrapper from "./SessionWrapper";
+import { CssBaseline } from "@mui/material"; 
+
 
 
 const geistSans = Geist({
@@ -28,9 +30,16 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* Add viewport meta tag for proper responsive behavior */}
+        <meta name="viewport" content="initial-scale=1, width=device-width" />
+      </head>
+      
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AppRouterCacheProvider>
           <StyledRoot>
+            {/* Add CssBaseline here to normalize styles */}
+            <CssBaseline />
             <AppLayout>
               <SessionWrapper>
               {children}

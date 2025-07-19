@@ -678,8 +678,9 @@ export default function RecipeListPage() {
               <MenuItem
                 onClick={() => {
                   handleCloseMore();
-                  handleOpenLogoutDialog();
+                  
                   console.log("Edit Profile clicked");
+                  router.push("/profile/edit-profile");
                 }}
                 sx={{
                   "&:hover": {
