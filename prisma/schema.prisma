@@ -14,11 +14,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ROLE {
+  user
+  admin
+}
+
 model User {
   id         Int         @id @default(autoincrement())
   username   String      @unique
   email      String      @db.VarChar(255)
   password   String      @db.VarChar(255)
+  image      String?     @db.VarChar(255)
+  role       ROLE
   recipes    Recipe[]
   favourites Favourite[]
   comments   Comment[]
@@ -67,9 +74,11 @@ model Recipe {
   category         CATEGORY
   pre_cooking_time String      @db.VarChar(255)
   cooking_time     String      @db.VarChar(255)
-  image            String      @db.VarChar(255)
-  video_url        String     @db.VarChar(255)
+  image_url         String      @db.LongText()
+  video_url        String?     @db.VarChar(255)
   status           STATUS
+  createdAt        DateTime  @default(now()) @map("created_at") 
+  updatedAt        DateTime  @updatedAt      @map("updated_at")        
   favourites       Favourite[]
   comments         Comment[]
   likes            Like[]
