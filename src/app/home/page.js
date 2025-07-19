@@ -159,6 +159,7 @@ export default function RecipeListPage() {
       return category === selectedCategory.toLowerCase();
     });
   };
+  
   // navbar more
   const [anchorElMore, setAnchorElMore] = React.useState(null);
   const openMore = Boolean(anchorElMore);

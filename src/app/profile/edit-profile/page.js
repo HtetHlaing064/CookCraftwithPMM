@@ -107,6 +107,7 @@ export default function EditProfilePage() {
         py: 4, 
         px: 2, 
         gap: 3,
+        boxShadow: '0 4px 12px ',
         // backgroundColor: 'rgba(255, 255, 255, 0.9)', // Semi-transparent white background
         backdropFilter: 'blur(5px)', // Optional: adds blur effect to background
         minHeight: '100vh',

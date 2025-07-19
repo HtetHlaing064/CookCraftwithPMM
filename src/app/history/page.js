@@ -368,8 +368,9 @@ export default function HistoryPage() {
               <MenuItem
                 onClick={() => {
                   handleCloseMore();
-                  handleOpenLogoutDialog();
+                  
                   console.log("Edit Profile clicked");
+                  router.push("/profile/edit-profile");
                 }}
                 sx={{
                   "&:hover": {
