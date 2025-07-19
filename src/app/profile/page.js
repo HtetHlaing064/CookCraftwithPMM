@@ -155,6 +155,8 @@ export default function ProfilePage() {
     },
   ];
 
+  
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Head>
@@ -164,56 +166,66 @@ export default function ProfilePage() {
       </Head>
 
       {/* AppBar Navigation */}
-      <AppBar
-        position="sticky"
-        sx={{
-          backgroundColor: "white",
-          color: "black",
-          boxShadow: "0 4px 12px rgba(255, 111, 0, 0.2)",
-        }}
-      >
-        <Toolbar sx={{ justifyContent: "space-around", alignItems: "center" }}>
-          <Typography variant="h6" sx={{ color: "#ff6f00", fontWeight: "bold" }}>
+      <AppBar position="sticky" sx={{ backgroundColor: 'white', color: 'black', boxShadow: '0 4px 12px rgba(255, 111, 0, 0.2)', }}>
+        {/* Toolbar space-around  */}
+        <Toolbar sx={{ justifyContent: 'space-around', alignItems: 'center' }}>
+
+          {/* Logo */}
+          <Typography variant="h6" sx={{ color: '#ff6f00', fontWeight: 'bold' }}>
+
             COOKCRAFT
+
           </Typography>
+
+          {/* Navigation Links */}
           <Box>
             <Link href="/home" passHref>
-              <Button
-                sx={{
-                  color: "black",
-                  mx: 1,
-                  transition: "transform 0.3s",
-                  "&:hover": { color: "#ff6f00", transform: "translateY(-3px)" },
-                }}
-              >
-                Home
-              </Button>
+              <Button sx={{
+                color: 'black', mx: 1,
+                transition: 'transform 0.3s',
+                '&:hover': {
+                  color: '#ff6f00',
+                  transform: 'translateY(-3px)',
+                }
+              }}>Home</Button>
             </Link>
             <Link href="/recipes" passHref>
-              <Button
-                sx={{
-                  color: "black",
-                  mx: 1,
-                  transition: "transform 0.3s",
-                  "&:hover": { color: "#ff6f00", transform: "translateY(-3px)" },
-                }}
-              >Recipes
-              </Button>
+              <Button sx={{
+                color: 'black', mx: 1,
+                transition: 'transform 0.3s',
+                '&:hover': {
+                  color: '#ff6f00',
+                  transform: 'translateY(-3px)',
+                }
+              }}>Recipes</Button>
             </Link>
             <Link href="/about" passHref>
-              <Button
-                sx={{
-                  color: "black",
-                  mx: 1,
-                  transition: "transform 0.3s",
-                  "&:hover": { color: "#ff6f00", transform: "translateY(-3px)" },
-                }}
-              >
-                About
-              </Button>
+              <Button sx={{
+                color: 'black', mx: 1,
+                transition: 'transform 0.3s',
+                '&:hover': {
+                  color: '#ff6f00',
+                  transform: 'translateY(-3px)',
+                }
+              }}>About</Button>
+              {/* textTransform: 'none' ဆိုစာလုံး အသေးရေးလို့ရ */}
             </Link>
+            <Link href="/contact" passHref>
+              <Button sx={{
+                color: 'black', mx: 1,
+                transition: 'transform 0.3s',
+                '&:hover': {
+                  color: '#ff6f00',
+                  transform: 'translateY(-3px)',
+                }
+              }}>Contact Us</Button>
+              {/* textTransform: 'none' ဆိုစာလုံး အသေးရေးလို့ရ */}
+            </Link>
+
           </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+
+          {/*  Action Icons */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Link href="/recipes/create" passHref>
               <Button
                 variant="outlined"
@@ -239,112 +251,163 @@ export default function ProfilePage() {
                   backgroundColor: "#ff7f00",
                   color: "white",
                   borderRadius: "20px",
-                  py: "6px",
-                  px: "16px",
+                  paddingY: "6px",
+                  paddingX: "16px",
                   fontSize: "16px",
                   fontWeight: 500,
-                  transition: "transform 0.3s",
-                  "&:hover": { backgroundColor: "#e86f00", transform: "translateY(-3px)" },
+                  transition: 'transform 0.3s',
+                  "&:hover": {
+                    backgroundColor: "#e86f00",
+                    transform: 'translateY(-3px)',
+                  },
                 }}
               >
                 Create Post
               </Button>
             </Link>
+
+            {/* <Link href="/notifications" passHref>
+                <IconButton sx={{ color:'black' }}>
+                    <NotificationsIcon />
+                </IconButton>
+            </Link> */}
+
+            {/* notifaction */}
             <Avatar
               sx={{
-                bgcolor: "#F57C00",
-                cursor: "pointer",
-                transition: "transform 0.3s",
-                "&:hover": { backgroundColor: "#e86f00", transform: "translateY(-3px)" },
+                bgcolor: "#F57C00", cursor: "pointer",
+                transition: 'transform 0.3s',
+                "&:hover": {
+                  backgroundColor: "#e86f00",
+                  transform: 'translateY(-3px)',
+                },
               }}
               onClick={handleClickNotification}
             >
               <NotificationsIcon />
             </Avatar>
             <Menu
-              sx={{ p: 2, minWidth: 300 }}
-              anchorEl={anchorE2}
-              open={openNotification}
-              onClose={handleCloseNotification}
+              sx={{
+                p: 2,
+                minWidth: 300,
+
+              }}
+              anchorEl={anchorE2} // Anchors the menu to the clicked element
+              open={openNotification} // Controls visibility based on the 'open' state
+              onClose={handleCloseNotification} // Closes the menu on outside click/item selection
+            // ... (styling props)
             >
               <Box>
-                {notifications.map((notification, index) => (
-                  <React.Fragment key={`notification-${notification.id}`}>
-                    <MenuItem
-                      onClick={handleClickNotification}
-                      sx={{ "&:hover": { backgroundColor: "#ff9f00" } }}
+                {notifications.map((notification, index) => [
+                  <MenuItem
+                    key={`item-${notification.id}`}
+                    onClick={handleClickNotification}
+                    sx={{
+
+                      "&:hover": {
+                        backgroundColor: "#ff9f00",
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        width: "100%",
+                      }}
                     >
-                      <Box sx={{ display: "flex", alignItems: "flex-start", width: "100%" }}>
-                        {notification.type !== "warning" ? (
-                          <Avatar
-                            src={notification.avatarSrc || "https://via.placeholder.com/40"}
-                            sx={{ width: 36, height: 36, mr: 1.5 }}
-                          />
-                        ) : (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              width: 36,
-                              height: 36,
-                              mr: 1.5,
-                              bgcolor: "#fff3e0",
-                              borderRadius: "50%",
-                            }}
-                          >
-                            <NotificationsIcon color="warning" />
-                          </Box>
-                        )}
-                        <Box sx={{ flexGrow: 1 }}>
-                          {notification.type === "comment" || notification.type === "like" ? (
-                            <Typography variant="body2">
-                              <Typography component="span" sx={{ fontWeight: "bold" }}>
+                      {/* Conditional rendering for avatar or warning icon */}
+                      {notification.type !== "warning" ? (
+                        <Avatar
+                          src={
+                            notification.avatarSrc ||
+                            "https://via.placeholder.com/40"
+                          }
+                          sx={{ width: 36, height: 36, mr: 1.5 }}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 36,
+                            height: 36,
+                            mr: 1.5,
+                            bgcolor: "#fff3e0",
+                            borderRadius: "50%",
+                          }}
+                        >
+                          <NotificationsIcon color="warning" />
+                        </Box>
+                      )}
+
+                      {/* Notification text content */}
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Typography variant="body2">
+                          {notification.type === "comment" ||
+                            notification.type === "like" ? (
+                            <>
+                              <Typography
+                                component="span"
+                                sx={{ fontWeight: "bold" }}
+                              >
                                 {notification.user}
                               </Typography>{" "}
                               {notification.message}
-                            </Typography>
+                            </>
                           ) : (
-                            <Typography component="span" sx={{ color: "text.secondary" }}>
+                            <Typography
+                              component="span"
+                              sx={{ color: "text.secondary" }}
+                            >
                               {notification.message}
                             </Typography>
                           )}
-                          <Typography variant="caption" color="text.secondary">
-                            {notification.time}
-                          </Typography>
-                        </Box>
-                        {notification.isNew && (
-                          <Badge
-                            color="error"
-                            variant="dot"
-                            sx={{
-                              ml: 1,
-                              "& .MuiBadge-badge": { height: 8, minWidth: 8, borderRadius: "50%" },
-                            }}
-                          />
-                        )}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {notification.time}
+                        </Typography>
                       </Box>
-                    </MenuItem>
-                    {index !== notifications.length - 1 && (
-                      <Divider key={`divider-${notification.id}`} />
-                    )}
-                  </React.Fragment>
-                ))}
+
+                      {/* 'New' dot indicator */}
+                      {notification.isNew && (
+                        <Badge
+                          color="error"
+                          variant="dot"
+                          sx={{
+                            ml: 1,
+                            "& .MuiBadge-badge": {
+                              height: 8,
+                              minWidth: 8,
+                              borderRadius: "50%",
+                            },
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </MenuItem>,
+
+                  // Divider between items (not after last item)
+                  index !== notifications.length - 1 && (
+                    <Divider key={`divider-${notification.id}`} />
+                  ),
+                ])}
               </Box>
             </Menu>
-            <Link href="/profile" passHref style={{ textDecoration: "none" }}>
-              <Avatar
-                src={profileImage}
-                sx={{
-                  bgcolor: "#ff7f00",
-                  cursor: "pointer",
-                  transition: "transform 0.3s",
-                  "&:hover": { backgroundColor: "#e86f00", transform: "translateY(-3px)" },
-                }}
-              >
-                K
-              </Avatar>
+
+            <Link href="/profile" passHref style={{ textDecoration: 'none' }}>
+              <Avatar sx={{
+                bgcolor: '#ff7f00', cursor: 'pointer',
+                transition: 'transform 0.3s',
+                "&:hover": {
+                  backgroundColor: "#e86f00",
+                  transform: 'translateY(-3px)',
+                },
+              }}>K</Avatar>
             </Link>
+
+            {/* navbarmore */}
             <IconButton color="inherit" onClick={handleClickMore}>
               <MoreVertIcon />
             </IconButton>
@@ -354,7 +417,12 @@ export default function ProfilePage() {
               onClose={handleCloseMore}
               PaperProps={{
                 elevation: 4,
-                sx: { borderRadius: 2, mt: 1, minWidth: 180, bgcolor: "white" },
+                sx: {
+                  borderRadius: 2,
+                  mt: 1,
+                  minWidth: 180,
+                  bgcolor: "white",
+                },
               }}
               transformOrigin={{ horizontal: "right", vertical: "top" }}
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
@@ -366,7 +434,11 @@ export default function ProfilePage() {
                   console.log("Edit Profile clicked");
                   router.push("/profile/edit-profile");
                 }}
-                sx={{ "&:hover": { backgroundColor: "#ff9f00" } }}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#ff9f00",
+                  },
+                }}
               >
                 <ListItemIcon>
                   <EditIcon fontSize="small" />
@@ -378,8 +450,13 @@ export default function ProfilePage() {
                   handleCloseMore();
                   console.log("History clicked");
                   router.push("/history");
+                }
+                }
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#ff9f00",
+                  },
                 }}
-                sx={{ "&:hover": { backgroundColor: "#ff9f00" } }}
               >
                 <ListItemIcon>
                   <HistoryIcon fontSize="small" />
@@ -393,7 +470,11 @@ export default function ProfilePage() {
                   handleOpenLogoutDialog();
                   console.log("Sign Out clicked");
                 }}
-                sx={{ "&:hover": { backgroundColor: "#ff9f00" } }}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#ff9f00",
+                  },
+                }}
               >
                 <ListItemIcon>
                   <LogoutIcon fontSize="small" />
@@ -401,6 +482,7 @@ export default function ProfilePage() {
                 <ListItemText primary="Sign Out" />
               </MenuItem>
             </Menu>
+
             <Dialog
               open={openLogoutDialog}
               onClose={handleCloseLogoutDialog}
@@ -410,22 +492,40 @@ export default function ProfilePage() {
               <DialogTitle id="logout-dialog-title" sx={{ textAlign: "center" }}>
                 <WarningAmberIcon sx={{ color: "#ff7f00", fontSize: 50 }} />
               </DialogTitle>
+
               <DialogContent sx={{ textAlign: "center" }}>
                 <Typography variant="h6" gutterBottom>
                   Are you sure?
                 </Typography>
-                <Typography variant="body2">You want to log out?</Typography>
+                <Typography variant="body2">
+                  You want to log out?
+                </Typography>
               </DialogContent>
+
               <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-                <Button variant="contained" color="error" onClick={handleCloseLogoutDialog}>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={handleCloseLogoutDialog}
+                >
                   Cancel
                 </Button>
-                <Button variant="contained" color="primary" onClick={handleConfirmLogout} autoFocus>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleConfirmLogout}
+                  autoFocus
+
+                >
                   Log Out
                 </Button>
               </DialogActions>
             </Dialog>
+
+
+
           </Box>
+
         </Toolbar>
       </AppBar>
 

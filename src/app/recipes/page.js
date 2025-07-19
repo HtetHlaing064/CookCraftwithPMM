@@ -797,83 +797,88 @@ export default function Recipe() {
             width: '100%',
             display: 'flex',
             flexWrap: 'wrap',
-            gap: 3,
+            gap: '16px',
             justifyContent: 'flex-start',
-            px: 2,
-            mb: 6
+            mb: 4
           }}
         >
-           {recipes.slice().map((recipe, index) => (
-    <Box 
-      key={index}
-      sx={{
-        flex: '0 0 calc(33.333% - 16px)',
-        maxWidth: 'calc(33.333% - 16px)',
-        minWidth: 280,
-        '@media (maxWidth: 900px)': {
-          flex: '0 0 calc(50% - 16px)',
-          maxWidth: 'calc(50% - 16px)'
-        },
-        '@media (maxWidth: 600px)': {
-          flex: '0 0 100%',
-          maxWidth: '100%'
-        }
-      }}
-    >
-      <Link href="/recipes/detail" passHref style={{ textDecoration: 'none' }}>
-        <Card
-          sx={{
-            width: '100%',
-            borderRadius: '16px',
-            border: '3px solid transparent',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              transform: 'translateY(-5px)',
-              borderColor: '#ff6f00',
-              boxShadow: '0 4px 12px rgba(255, 111, 0, 0.9)',
-            },
-            cursor: 'pointer'
-          }}
-        >
-          <CardMedia
-            component="img"
-            height="160"
-            image={recipe.image}
-            alt={recipe.title}
-            sx={{ objectFit: 'cover' }}
-          />
-          <CardContent>
-            <Typography variant="subtitle1" fontWeight="bold">
-              {recipe.title}
-            </Typography>
+          {recipes.slice().map((recipe, index) => (
             <Box
+              key={index}
               sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mt: 1,
+                flex: '0 0 calc(33.333% - 16px)',
+                maxWidth: 'calc(33.333% - 16px)',
+                minWidth: 280,
+                '@media (maxWidth: 900px)': {
+                  flex: '0 0 calc(50% - 16px)',
+                  maxWidth: 'calc(50% - 16px)'
+                },
+                '@media (maxWidth: 600px)': {
+                  flex: '0 0 100%',
+                  maxWidth: '100%'
+                }
               }}
             >
-              <Typography variant="body2" color="text.secondary">
-                By {recipe.author}
-              </Typography>
-              <IconButton 
-                aria-label="favorite" 
-                size="small"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  // Favorite logic here
-                }}
-              >
-                <FavoriteBorderIcon sx={{ fontSize: 20, color: "gray" }} />
-              </IconButton>
+              <Link href="/recipes/detail" passHref style={{ textDecoration: 'none' }}>
+                <Card
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: '16px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                    borderRadius: '16px',
+                    border: '3px solid transparent',
+                    transition: 'transform 0.5s',
+                    transition: 'all 0.5s ease',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      borderColor: '#ff6f00',
+                      boxShadow: '0 4px 12px rgba(255, 111, 0, 0.9)',
+                    },
+                    cursor: 'pointer'
+                  }}
+                >
+                  <CardMedia
+                    component="img"
+                    height="180"
+                    image={recipe.image}
+                    alt={recipe.title}
+                    sx={{ objectFit: 'cover' }}
+                  />
+                  <CardContent>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {recipe.title}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        mt: 1,
+                      }}
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        By {recipe.author}
+                      </Typography>
+                      <IconButton
+                        aria-label="favorite"
+                        size="small"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          // Favorite logic here
+                        }}
+                      >
+                        <FavoriteBorderIcon sx={{ fontSize: 20, color: "gray" }} />
+                      </IconButton>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Link>
             </Box>
-          </CardContent>
-        </Card>
-      </Link>
-    </Box>
-  ))}
+          ))}
         </Box>
         {/* Footer Links */}
 
@@ -882,49 +887,49 @@ export default function Recipe() {
       </Box>
 
       {/* footer */}
-        <Box 
-      component="footer" 
-      sx={{
-        backgroundColor: '#ff6f00',
-        color: 'white',
-        py: 3,
-        px: 2,
-        borderTop: '1px solid #ffe0b2',
-        mt: 4,
-        textAlign: 'center'
-      }}
-    >
-      <Container maxWidth="lg">
-        {/* Brand name with subtle highlight */}
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            color: 'white', 
-            fontWeight: 'bold',
-            mb: 1
-          }}
-        >
-          COOKCRAFT
-        </Typography>
-        
-        {/* Short tagline */}
-        <Typography variant="body2" sx={{ mb: 1 }}>
-          Where culinary creativity meets community
-        </Typography>
-        
-        {/* Copyright with love icon */}
-        <Typography variant="caption" sx={{ 
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 0.5
-        }}>
-          © {new Date().getFullYear()} Made with 
-          <FavoriteIcon sx={{ color: 'white', fontSize: '14px' }} /> 
-          in Myanmar
-        </Typography>
-      </Container>
-    </Box>
+      <Box
+        component="footer"
+        sx={{
+          backgroundColor: '#ff6f00',
+          color: 'white',
+          py: 3,
+          px: 2,
+          borderTop: '1px solid #ffe0b2',
+          mt: 4,
+          textAlign: 'center'
+        }}
+      >
+        <Container maxWidth="lg">
+          {/* Brand name with subtle highlight */}
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'white',
+              fontWeight: 'bold',
+              mb: 1
+            }}
+          >
+            COOKCRAFT
+          </Typography>
+
+          {/* Short tagline */}
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            Where culinary creativity meets community
+          </Typography>
+
+          {/* Copyright with love icon */}
+          <Typography variant="caption" sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 0.5
+          }}>
+            © {new Date().getFullYear()} Made with
+            <FavoriteIcon sx={{ color: 'white', fontSize: '14px' }} />
+            in Myanmar
+          </Typography>
+        </Container>
+      </Box>
     </Box>
   );
 }
