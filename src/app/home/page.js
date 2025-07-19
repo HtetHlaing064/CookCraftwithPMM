@@ -26,6 +26,8 @@ import {
   DialogContent,
   DialogActions,
   Pagination,
+  CircularProgress,
+  Alert,
 
 } from "@mui/material";
 
@@ -43,17 +45,19 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Grid from "@mui/material/Grid";
 import StarIcon from "@mui/icons-material/Star";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Badge from "@mui/material/Badge";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddIcon from '@mui/icons-material/Add';
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import { useSession } from "next-auth/react";
 
 
 export default function RecipeListPage() {
 
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [anchorE2, setAnchorE2] = React.useState(null);
@@ -65,137 +69,97 @@ export default function RecipeListPage() {
   const handleCloseNotification = () => setAnchorE2(null);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Database recipe states
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const handlePageChange = (page) => {
     setCurrentPage(page);
     console.log("Selected Page:", page);
-    // You can also fetch data for this page here
   };
 
   // State ကို ထပ်ထည့်ပါ
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  // Filtered recipes function
-  const getFilteredRecipes = () => {
-    if (selectedCategory === "All") return recipes;
-    return recipes.filter(recipe => recipe.category === selectedCategory);
-  };
-
-  // recipses data
-  const recipes = [
+  // Static fallback recipes for when user is not logged in
+  const staticRecipes = [
     {
       id: 1,
-      title: "Burmese Noodle Salad",
-      author: "The cooking channel",
-      rating: 4.6,
-      image: "/images/food1.jpg",
-      category: "Breakfast"
+      name: "Burmese Noodle Salad",
+      user: { username: "The cooking channel" },
+      image_url: "/images/food1.jpg",
+      category: "breakfast"
     },
     {
       id: 2,
-      title: "Fried Rice",
-      author: "Schar's kitchen",
-      rating: 4.6,
-      image: "/images/food2.jpg",
-      category: "Lunch"
+      name: "Fried Rice",
+      user: { username: "Schar's kitchen" },
+      image_url: "/images/food2.jpg",
+      category: "lunch"
     },
     {
       id: 3,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 4,
-      title: "Burmese Noodle Salad",
-      author: "The cooking channel",
-      rating: 4.6,
-      image: "/images/food1.jpg",
-      category: "Breakfast"
-    },
-    {
-      id: 5,
-      title: "Fried Rice",
-      author: "Schar's kitchen",
-      rating: 4.6,
-      image: "/images/food2.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 6,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 7,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 8,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 9,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 10,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 11,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 12,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 13,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 14,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
+      name: "Steamed Sticky Rice",
+      user: { username: "Pasta da Italia" },
+      image_url: "/images/food3.jpg",
+      category: "dinner"
     },
   ];
-  // navbar more 
+
+  // Fetch recipes from database
+  const fetchRecipes = async () => {
+    if (!session?.user?.id) {
+      setRecipes(staticRecipes);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/recipes');
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch recipes');
+      }
+
+      const data = await response.json();
+      console.log('Fetched recipes:', data);
+
+      // Transform database data to match UI expectations
+      const transformedRecipes = data.map(recipe => ({
+        ...recipe,
+        title: recipe.name, // Map name to title for UI compatibility
+        author: recipe.user?.username || 'Unknown Chef',
+        image: recipe.image_url,
+        rating: 4.6 // Default rating since we don't have ratings in DB yet
+      }));
+
+      setRecipes(transformedRecipes);
+    } catch (err) {
+      console.error('Error fetching recipes:', err);
+      setError(err.message);
+      setRecipes(staticRecipes); // Fallback to static data
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch recipes when component mounts or session changes
+  useEffect(() => {
+    fetchRecipes();
+  }, [session]);
+
+  // Filtered recipes function
+  const getFilteredRecipes = () => {
+    if (selectedCategory === "All") return recipes;
+    return recipes.filter(recipe => {
+      const category = recipe.category?.toLowerCase();
+      return category === selectedCategory.toLowerCase();
+    });
+  };
+  // navbar more
   const [anchorElMore, setAnchorElMore] = React.useState(null);
   const openMore = Boolean(anchorElMore);
 
@@ -678,7 +642,7 @@ export default function RecipeListPage() {
               <MenuItem
                 onClick={() => {
                   handleCloseMore();
-                  
+
                   console.log("Edit Profile clicked");
                   router.push("/profile/edit-profile");
                 }}
@@ -851,7 +815,7 @@ export default function RecipeListPage() {
                   borderRadius: 2,
                   backgroundColor: selectedCategory === "All" ? '#ff6f00' : 'transparent',
                   color: selectedCategory === "All" ? 'white' : 'inherit',
-                   transition: 'transform 0.5s',
+                  transition: 'transform 0.5s',
                   transition: 'all 0.5s ease',
                   '&:hover': {
                     backgroundColor: selectedCategory === "All" ? '#e65100' : '#fff3e0',
@@ -924,6 +888,33 @@ export default function RecipeListPage() {
 
           {/* Recipe Cards */}
           <Box flex={1}>
+            {/* Loading State */}
+            {loading && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                <CircularProgress sx={{ color: '#ff6f00' }} />
+                <Typography sx={{ ml: 2 }}>Loading delicious recipes...</Typography>
+              </Box>
+            )}
+
+            {/* Error State */}
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}. Showing sample recipes instead.
+              </Alert>
+            )}
+
+            {/* Session Status Info */}
+            {!loading && (
+              <Box sx={{ mb: 2, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  {session?.user?.id
+                    ? `Welcome back, ${session.user.name || session.user.username}! Showing recipes from our community.`
+                    : 'Showing sample recipes. Log in to see more recipes from our community!'
+                  }
+                </Typography>
+              </Box>
+            )}
+
             {/* Flex container - Grid မသုံးဘဲ Flexbox နဲ့ layout ဖော်မယ် */}
             <Box sx={{
               display: 'flex',
@@ -951,55 +942,68 @@ export default function RecipeListPage() {
                     {/* <Link href={`/recipes/detail/${recipe.id}`} passHref style={{ textDecoration: 'none' }}> */}
                     <Link href="/recipes/detail" passHref style={{ textDecoration: 'none' }}>
 
-                    <Card sx={{
+                      <Card sx={{
 
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                      borderRadius: '16px',
-                      border: '3px solid transparent',
-                      transition: 'transform 0.5s',
-                      transition: 'all 0.5s ease',
-                      '&:hover': {
-                        transform: 'translateY(-5px)',
-                        borderColor: '#ff6f00',
-                        boxShadow: '0 4px 12px rgba(255, 111, 0, 0.9)',
-                      },
-                       cursor: 'pointer' // Add cursor pointer to indicate it's clickable
-                    }}>
-                      <CardMedia
-                        component="img"
-                        height="180"
-                        image={recipe.image}
-                        alt={recipe.title}
-                        sx={{ objectFit: "cover" }}
-                      />
-                      <CardContent>
-                        <Typography gutterBottom variant="h6" sx={{ fontWeight: "bold" }}>
-                          {recipe.title}
-                        </Typography>
-                        {/* Author and rating in one line */}
-                        <Box sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          mt: 1
-                        }}>
-                          <Typography variant="body2" color="text.secondary">
-                            By {recipe.author}
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        borderRadius: '16px',
+                        border: '3px solid transparent',
+                        transition: 'transform 0.5s',
+                        transition: 'all 0.5s ease',
+                        '&:hover': {
+                          transform: 'translateY(-5px)',
+                          borderColor: '#ff6f00',
+                          boxShadow: '0 4px 12px rgba(255, 111, 0, 0.9)',
+                        },
+                        cursor: 'pointer' // Add cursor pointer to indicate it's clickable
+                      }}>
+                        <CardMedia
+                          component="img"
+                          height="180"
+                          image={recipe.image_url || recipe.image || "/images/food1.jpg"}
+                          alt={recipe.name || recipe.title}
+                          sx={{ objectFit: "cover" }}
+                        />
+                        <CardContent>
+                          <Typography gutterBottom variant="h6" sx={{ fontWeight: "bold" }}>
+                            {recipe.name || recipe.title}
                           </Typography>
-                          <Box sx={{ display: "flex", alignItems: "center" }}>
-                            <StarIcon sx={{ color: "orange", fontSize: 16 }} />
-                            <Typography variant="body2" sx={{ ml: 0.5 }}>
-                              {recipe.rating}
+                          {/* Author and rating in one line */}
+                          <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            mt: 1
+                          }}>
+                            <Typography variant="body2" color="text.secondary">
+                              By {recipe.user?.username || recipe.author || 'Unknown Chef'}
                             </Typography>
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                              <StarIcon sx={{ color: "orange", fontSize: 16 }} />
+                              <Typography variant="body2" sx={{ ml: 0.5 }}>
+                                {recipe.rating || 4.6}
+                              </Typography>
+                            </Box>
                           </Box>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                     </Link>
+
+                          {/* Category Chip */}
+                          <Box sx={{ mt: 1 }}>
+                            <Chip
+                              label={recipe.category}
+                              size="small"
+                              sx={{
+                                backgroundColor: '#fff3e0',
+                                color: '#ff6f00',
+                                textTransform: 'capitalize'
+                              }}
+                            />
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Link>
                   </Box>
                 ))}
             </Box>
@@ -1034,49 +1038,49 @@ export default function RecipeListPage() {
       </Container>
 
       {/* footer */}
-       <Box 
-      component="footer" 
-      sx={{
-        backgroundColor: '#ff6f00',
-        color: 'white',
-        py: 3,
-        px: 2,
-        borderTop: '1px solid #ffe0b2',
-        mt: 4,
-        textAlign: 'center'
-      }}
-    >
-      <Container maxWidth="lg">
-        {/* Brand name with subtle highlight */}
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            color: 'white', 
-            fontWeight: 'bold',
-            mb: 1
-          }}
-        >
-          COOKCRAFT
-        </Typography>
-        
-        {/* Short tagline */}
-        <Typography variant="body2" sx={{ mb: 1 }}>
-          Where culinary creativity meets community
-        </Typography>
-        
-        {/* Copyright with love icon */}
-        <Typography variant="caption" sx={{ 
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 0.5
-        }}>
-          © {new Date().getFullYear()} Made with 
-          <FavoriteIcon sx={{ color: 'white', fontSize: '14px' }} /> 
-          in Myanmar
-        </Typography>
-      </Container>
-    </Box>
+      <Box
+        component="footer"
+        sx={{
+          backgroundColor: '#ff6f00',
+          color: 'white',
+          py: 3,
+          px: 2,
+          borderTop: '1px solid #ffe0b2',
+          mt: 4,
+          textAlign: 'center'
+        }}
+      >
+        <Container maxWidth="lg">
+          {/* Brand name with subtle highlight */}
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'white',
+              fontWeight: 'bold',
+              mb: 1
+            }}
+          >
+            COOKCRAFT
+          </Typography>
+
+          {/* Short tagline */}
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            Where culinary creativity meets community
+          </Typography>
+
+          {/* Copyright with love icon */}
+          <Typography variant="caption" sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 0.5
+          }}>
+            © {new Date().getFullYear()} Made with
+            <FavoriteIcon sx={{ color: 'white', fontSize: '14px' }} />
+            in Myanmar
+          </Typography>
+        </Container>
+      </Box>
 
 
     </Box>

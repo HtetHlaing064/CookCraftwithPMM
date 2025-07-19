@@ -45,7 +45,9 @@ const schema = yup.object().shape({
 
 //get favourites list api
 export async function GET() {
-  const recipes = await prisma.recipe.findMany();
+  const recipes = await prisma.recipe.findMany({
+    include: { user: true }
+  });
   return NextResponse.json(recipes);
 }
 
