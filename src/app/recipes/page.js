@@ -17,10 +17,10 @@ import {
   TextField,
   InputAdornment,
   Paper,
+  Chip,
   Card,
   CardMedia,
   CardContent,
-  Chip,
   ListItemIcon,
   ListItemText,
   Divider,
@@ -28,6 +28,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Pagination,
+  CircularProgress,
 } from "@mui/material";
 
 import React from "react";
@@ -45,7 +47,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Grid from "@mui/material/Grid";
 import StarIcon from "@mui/icons-material/Star";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import Badge from "@mui/material/Badge";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AddIcon from "@mui/icons-material/Add";
@@ -53,92 +55,70 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import { useSession } from "next-auth/react";
 
 export default function Recipe() {
 
-  const recipes = [
-    {
-      id: 1,
-      title: "Burmese Noodle Salad",
-      author: "The cooking channel",
-      rating: 4.6,
-      image: "/images/food1.jpg",
-      category: "Breakfast"
-    },
-    {
-      id: 2,
-      title: "Fried Rice",
-      author: "Schar's kitchen",
-      rating: 4.6,
-      image: "/images/food2.jpg",
-      category: "Lunch"
-    },
-    {
-      id: 3,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 4,
-      title: "Burmese Noodle Salad",
-      author: "The cooking channel",
-      rating: 4.6,
-      image: "/images/food1.jpg",
-      category: "Breakfast"
-    },
-    {
-      id: 5,
-      title: "Fried Rice",
-      author: "Schar's kitchen",
-      rating: 4.6,
-      image: "/images/food2.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 6,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 7,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 8,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-    {
-      id: 9,
-      title: "Steamed Sticky Rice",
-      author: "Pasta da Italia",
-      rating: 4.6,
-      image: "/images/food3.jpg",
-      category: "Dinner"
-    },
-
-  ];
+  const { data: session, status } = useSession();
 
 
+  // Database recipe states
+   const [recipes, setRecipes] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("All");
+
   const getFilteredRecipes = () => {
     if (selectedCategory === "All") return recipes;
-    return recipes.filter(recipe => recipe.category === selectedCategory);
+    return recipes.filter(recipe => {
+      const category = recipe.category?.toLowerCase();
+      return category === selectedCategory.toLowerCase();
+    });
   };
 
+    // Fetch recipes when component mounts or session changes
+    useEffect(() => {
+      fetchRecipes();
+    }, [session]);
+
+    // Fetch recipes from database
+  const fetchRecipes = async () => {
+    if (!session?.user?.id) {
+      setRecipes(staticRecipes);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/recipes');
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch recipes');
+      }
+
+      const data = await response.json();
+      console.log('Fetched recipes:', data);
+
+      // Transform database data to match UI expectations
+      const transformedRecipes = data.map(recipe => ({
+        ...recipe,
+        title: recipe.name, // Map name to title for UI compatibility
+        author: recipe.user?.username || 'Unknown Chef',
+        image: recipe.image_url,
+        rating: 4.6 // Default rating since we don't have ratings in DB yet
+      }));
+
+      setRecipes(transformedRecipes);
+    } catch (err) {
+      console.error('Error fetching recipes:', err);
+      setError(err.message);
+      setRecipes(staticRecipes); // Fallback to static data
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const recommendedRecipes = [
 
@@ -190,7 +170,7 @@ export default function Recipe() {
   ];
 
   const router = useRouter();
-
+ 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [anchorE2, setAnchorE2] = React.useState(null);
   const openProfile = Boolean(anchorEl);
@@ -706,180 +686,298 @@ export default function Recipe() {
         </Typography>
 
         <Box flex={1}>
-          {/* Flex container - Grid မသုံးဘဲ Flexbox နဲ့ layout ဖော်မယ် */}
-          <Box sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '16px',
-            justifyContent: 'center',
-            mb: 4
-          }}>
-            {getFilteredRecipes().map((recipe) => (
-              <Box key={recipe.id} sx={{
-                flex: '0 0 calc(33.333% - 16px)', // 3 items per row
-                maxWidth: 'calc(33.333% - 16px)',
-                minWidth: '280px', // Minimum width for mobile
-                '@media (max-width: 900px)': {
-                  flex: '0 0 calc(50% - 16px)', // 2 items per row on tablet
-                  maxWidth: 'calc(50% - 16px)'
-                },
-                '@media (max-width: 600px)': {
-                  flex: '0 0 100%', // 1 item per row on mobile
-                  maxWidth: '100%'
-                }
-              }}>
-                {/* <Link href={`/recipes/detail/${recipe.id}`} passHref style={{ textDecoration: 'none' }}> */}
-                <Link href="/recipes/detail" passHref style={{ textDecoration: 'none' }}>
-
-                  <Card sx={{
-
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                    borderRadius: '16px',
-                    border: '3px solid transparent',
-                    transition: 'transform 0.5s',
-                    transition: 'all 0.5s ease',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      borderColor: '#ff6f00',
-                      boxShadow: '0 4px 12px rgba(255, 111, 0, 0.9)',
-                    },
-                    cursor: 'pointer' // Add cursor pointer to indicate it's clickable
-                  }}>
-                    <CardMedia
-                      component="img"
-                      height="180"
-                      image={recipe.image}
-                      alt={recipe.title}
-                      sx={{ objectFit: "cover" }}
-                    />
-                    <CardContent>
-                      <Typography gutterBottom variant="h6" sx={{ fontWeight: "bold" }}>
-                        {recipe.title}
-                      </Typography>
-                      {/* Author and rating in one line */}
-                      <Box sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        mt: 1
-                      }}>
-                        <Typography variant="body2" color="text.secondary">
-                          By {recipe.author}
-                        </Typography>
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <StarIcon sx={{ color: "orange", fontSize: 16 }} />
-                          <Typography variant="body2" sx={{ ml: 0.5 }}>
-                            {recipe.rating}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Link>
+            {/* Loading State */}
+            {loading && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                <CircularProgress sx={{ color: '#ff6f00' }} />
+                <Typography sx={{ ml: 2 }}>Loading delicious recipes...</Typography>
               </Box>
-            ))}
+            )}
+
+            {/* Error State */}
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}. Showing sample recipes instead.
+              </Alert>
+            )}
+
+            {/* Session Status Info */}
+            {!loading && (
+              <Box sx={{ mb: 2, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  {session?.user?.id
+                    ? `Welcome back, ${session.user.name || session.user.username}! Showing recipes from our community.`
+                    : 'Showing sample recipes. Log in to see more recipes from our community!'
+                  }
+                </Typography>
+              </Box>
+            )}
+
+            {/* Flex container - Grid မသုံးဘဲ Flexbox နဲ့ layout ဖော်မယ် */}
+            <Box sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '16px',
+              justifyContent: 'center',
+              mb: 4
+            }}>
+              {getFilteredRecipes()
+                .slice((currentPage - 1) * 12, currentPage * 12)
+                .map((recipe) => (
+                  <Box key={recipe.id} sx={{
+                    flex: '0 0 calc(33.333% - 16px)', // 3 items per row
+                    maxWidth: 'calc(33.333% - 16px)',
+                    minWidth: '280px', // Minimum width for mobile
+                    '@media (max-width: 900px)': {
+                      flex: '0 0 calc(50% - 16px)', // 2 items per row on tablet
+                      maxWidth: 'calc(50% - 16px)'
+                    },
+                    '@media (max-width: 600px)': {
+                      flex: '0 0 100%', // 1 item per row on mobile
+                      maxWidth: '100%'
+                    }
+                  }}>
+                    {/* <Link href={`/recipes/detail/${recipe.id}`} passHref style={{ textDecoration: 'none' }}> */}
+                    <Link href="/recipes/detail" passHref style={{ textDecoration: 'none' }}>
+
+                      <Card sx={{
+
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        borderRadius: '16px',
+                        border: '3px solid transparent',
+                        transition: 'transform 0.5s',
+                        transition: 'all 0.5s ease',
+                        '&:hover': {
+                          transform: 'translateY(-5px)',
+                          borderColor: '#ff6f00',
+                          boxShadow: '0 4px 12px rgba(255, 111, 0, 0.9)',
+                        },
+                        cursor: 'pointer' // Add cursor pointer to indicate it's clickable
+                      }}>
+                        <CardMedia
+                          component="img"
+                          height="180"
+                          image={recipe.image_url || recipe.image || "/images/food1.jpg"}
+                          alt={recipe.name || recipe.title}
+                          sx={{ objectFit: "cover" }}
+                        />
+                        <CardContent>
+                          <Typography gutterBottom variant="h6" sx={{ fontWeight: "bold" }}>
+                            {recipe.name || recipe.title}
+                          </Typography>
+                          {/* Author and rating in one line */}
+                          <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            mt: 1
+                          }}>
+                            <Typography variant="body2" color="text.secondary">
+                              By {recipe.user?.username || recipe.author || 'Unknown Chef'}
+                            </Typography>
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                              <StarIcon sx={{ color: "orange", fontSize: 16 }} />
+                              <Typography variant="body2" sx={{ ml: 0.5 }}>
+                                {recipe.rating || 4.6}
+                              </Typography>
+                            </Box>
+                          </Box>
+
+                          {/* Category Chip */}
+                          <Box sx={{ mt: 1 }}>
+                            <Chip
+                              label={recipe.category}
+                              size="small"
+                              sx={{
+                                backgroundColor: '#fff3e0',
+                                color: '#ff6f00',
+                                textTransform: 'capitalize'
+                              }}
+                            />
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </Box>
+                ))}
+            </Box>
+
+            {/* Pagination  */}
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Pagination
+                count={Math.ceil(getFilteredRecipes().length / 12)}
+                page={currentPage}
+                onChange={(event, value) => setCurrentPage(value)}
+                color="primary"
+                sx={{
+                  '& .MuiPaginationItem-root': {
+                    borderRadius: 2,
+                  },
+                  '& .Mui-selected': {
+                    backgroundColor: '#ff6f00',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: '#e65100'
+                    }
+                  }
+                }}
+              />
+            </Box>
+
           </Box>
-
-
-
-        </Box>
         {/* Recommended Recipes */}
         <Typography variant="h6" fontWeight="bold" mt={7} mb={2} >
           RecommendedRecipes
         </Typography>
 
-        <Box
-          sx={{
-            width: '100%',
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '16px',
-            justifyContent: 'flex-start',
-            mb: 4
-          }}
-        >
-          {recipes.slice().map((recipe, index) => (
-            <Box
-              key={index}
-              sx={{
-                flex: '0 0 calc(33.333% - 16px)',
-                maxWidth: 'calc(33.333% - 16px)',
-                minWidth: 280,
-                '@media (maxWidth: 900px)': {
-                  flex: '0 0 calc(50% - 16px)',
-                  maxWidth: 'calc(50% - 16px)'
-                },
-                '@media (maxWidth: 600px)': {
-                  flex: '0 0 100%',
-                  maxWidth: '100%'
-                }
-              }}
-            >
-              <Link href="/recipes/detail" passHref style={{ textDecoration: 'none' }}>
-                <Card
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    borderRadius: '16px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                    borderRadius: '16px',
-                    border: '3px solid transparent',
-                    transition: 'transform 0.5s',
-                    transition: 'all 0.5s ease',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      borderColor: '#ff6f00',
-                      boxShadow: '0 4px 12px rgba(255, 111, 0, 0.9)',
+          <Box flex={1}>
+            {/* Loading State */}
+            {loading && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                <CircularProgress sx={{ color: '#ff6f00' }} />
+                <Typography sx={{ ml: 2 }}>Loading delicious recipes...</Typography>
+              </Box>
+            )}
+
+            {/* Error State */}
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}. Showing sample recipes instead.
+              </Alert>
+            )}
+
+            {/* Session Status Info */}
+            {!loading && (
+              <Box sx={{ mb: 2, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  {session?.user?.id
+                    ? `Welcome back, ${session.user.name || session.user.username}! Showing recipes from our community.`
+                    : 'Showing sample recipes. Log in to see more recipes from our community!'
+                  }
+                </Typography>
+              </Box>
+            )}
+
+            {/* Flex container - Grid မသုံးဘဲ Flexbox နဲ့ layout ဖော်မယ် */}
+            <Box sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '16px',
+              justifyContent: 'center',
+              mb: 4
+            }}>
+              {getFilteredRecipes()
+                .slice((currentPage - 1) * 12, currentPage * 12)
+                .map((recipe) => (
+                  <Box key={recipe.id} sx={{
+                    flex: '0 0 calc(33.333% - 16px)', // 3 items per row
+                    maxWidth: 'calc(33.333% - 16px)',
+                    minWidth: '280px', // Minimum width for mobile
+                    '@media (max-width: 900px)': {
+                      flex: '0 0 calc(50% - 16px)', // 2 items per row on tablet
+                      maxWidth: 'calc(50% - 16px)'
                     },
-                    cursor: 'pointer'
-                  }}
-                >
-                  <CardMedia
-                    component="img"
-                    height="180"
-                    image={recipe.image}
-                    alt={recipe.title}
-                    sx={{ objectFit: 'cover' }}
-                  />
-                  <CardContent>
-                    <Typography variant="subtitle1" fontWeight="bold">
-                      {recipe.title}
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        mt: 1,
-                      }}
-                    >
-                      <Typography variant="body2" color="text.secondary">
-                        By {recipe.author}
-                      </Typography>
-                      <IconButton
-                        aria-label="favorite"
-                        size="small"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          // Favorite logic here
-                        }}
-                      >
-                        <FavoriteBorderIcon sx={{ fontSize: 20, color: "gray" }} />
-                      </IconButton>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Link>
+                    '@media (max-width: 600px)': {
+                      flex: '0 0 100%', // 1 item per row on mobile
+                      maxWidth: '100%'
+                    }
+                  }}>
+                    {/* <Link href={`/recipes/detail/${recipe.id}`} passHref style={{ textDecoration: 'none' }}> */}
+                    <Link href="/recipes/detail" passHref style={{ textDecoration: 'none' }}>
+
+                      <Card sx={{
+
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        borderRadius: '16px',
+                        border: '3px solid transparent',
+                        transition: 'transform 0.5s',
+                        transition: 'all 0.5s ease',
+                        '&:hover': {
+                          transform: 'translateY(-5px)',
+                          borderColor: '#ff6f00',
+                          boxShadow: '0 4px 12px rgba(255, 111, 0, 0.9)',
+                        },
+                        cursor: 'pointer' // Add cursor pointer to indicate it's clickable
+                      }}>
+                        <CardMedia
+                          component="img"
+                          height="180"
+                          image={recipe.image_url || recipe.image || "/images/food1.jpg"}
+                          alt={recipe.name || recipe.title}
+                          sx={{ objectFit: "cover" }}
+                        />
+                        <CardContent>
+                          <Typography gutterBottom variant="h6" sx={{ fontWeight: "bold" }}>
+                            {recipe.name || recipe.title}
+                          </Typography>
+                          {/* Author and rating in one line */}
+                          <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            mt: 1
+                          }}>
+                            <Typography variant="body2" color="text.secondary">
+                              By {recipe.user?.username || recipe.author || 'Unknown Chef'}
+                            </Typography>
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                              <StarIcon sx={{ color: "orange", fontSize: 16 }} />
+                              <Typography variant="body2" sx={{ ml: 0.5 }}>
+                                {recipe.rating || 4.6}
+                              </Typography>
+                            </Box>
+                          </Box>
+
+                          {/* Category Chip */}
+                          <Box sx={{ mt: 1 }}>
+                            <Chip
+                              label={recipe.category}
+                              size="small"
+                              sx={{
+                                backgroundColor: '#fff3e0',
+                                color: '#ff6f00',
+                                textTransform: 'capitalize'
+                              }}
+                            />
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </Box>
+                ))}
             </Box>
-          ))}
-        </Box>
+
+            {/* Pagination  */}
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Pagination
+                count={Math.ceil(getFilteredRecipes().length / 12)}
+                page={currentPage}
+                onChange={(event, value) => setCurrentPage(value)}
+                color="primary"
+                sx={{
+                  '& .MuiPaginationItem-root': {
+                    borderRadius: 2,
+                  },
+                  '& .Mui-selected': {
+                    backgroundColor: '#ff6f00',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: '#e65100'
+                    }
+                  }
+                }}
+              />
+            </Box>
+
+          </Box>
         {/* Footer Links */}
 
 
