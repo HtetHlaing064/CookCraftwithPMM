@@ -207,29 +207,29 @@ export default function SubmitRecipePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
- const handleImageUpload = async (file) => {
-  if (!file) return null;
+  const handleImageUpload = async (file) => {
+    if (!file) return null;
 
-  try {
-    const formData = new FormData();
-    formData.append('image', file);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
 
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-    if (!response.ok) {
-      throw new Error('Upload failed');
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Upload error:', error);
+      setMessage('Image upload failed');
+      return null;
     }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Upload error:', error);
-    setMessage('Image upload failed');
-    return null;
-  }
-};
+  };
 
 
 
@@ -254,14 +254,17 @@ export default function SubmitRecipePage() {
     if (!file) return;
 
     try {
-      // Create a preview URL
+      // Create a preview URL immediately
       const previewURL = URL.createObjectURL(file);
       setPreview(previewURL);
-      
+      setUploadProgress(10);
+
       // Upload the image and get the URL
       const formData = new FormData();
       formData.append("image", file);
-      
+
+      setUploadProgress(50);
+
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
@@ -272,66 +275,82 @@ export default function SubmitRecipePage() {
       }
 
       const result = await response.json();
-      
+
       // Set the image URL in the form data
-      setValue("imageUrl", result.image_url); // Assuming your API returns { imageUrl: "..." }
+      setValue("image_url", result.image_url);
       setImageFile(file);
-      
+      setUploadProgress(100);
+
+      // Clear progress after a short delay
+      setTimeout(() => setUploadProgress(0), 1000);
+
     } catch (err) {
       console.error("Upload error:", err);
-      setError("Image upload failed");
+      setMessage("Image upload failed");
+      setMessageType("error");
+      setUploadProgress(0);
+      setPreview(null);
     }
   };
 
 
-const onSubmit = async (data, action = "submit") => {
-  try {
-    setIsSubmitting(true);
+  const onSubmit = async (data, action = "submit") => {
+    try {
+      setIsSubmitting(true);
 
-    if (!session?.user?.id) {
-      setMessage("Please log in first to submit a recipe.");
+      // Preview mode - allow without login
+      if (action === "preview") {
+        const formData = {
+          ...data,
+          user_id: session?.user?.id || null,
+          image_url: data.image_url || null
+        };
+
+        router.push(
+          `/recipes/preview?formData=${encodeURIComponent(
+            JSON.stringify(formData)
+          )}`
+        );
+        return;
+      }
+
+      // Submit mode - require login
+      if (!session?.user?.id) {
+        setMessage("Please log in first to submit a recipe.");
+        setMessageType("error");
+        return;
+      }
+
+      // Add user ID and ensure all required fields are included
+      const formData = {
+        ...data,
+        user_id: session.user.id,
+        image_url: data.image_url || null,
+        video_url: null, // Optional field
+        status: "pending" // Default status
+      };
+
+      // Submit mode - Ensure image is uploaded first
+      if (!data.image_url) {
+        setMessage("Please upload an image");
+        setMessageType("error");
+        return;
+      }
+
+      const response = await axios.post("/api/recipes", formData);
+
+      setMessage("Recipe submitted successfully!");
+      setMessageType("success");
+      reset();
+
+    } catch (error) {
+      console.error("Submission error:", error);
+      setMessage(error.response?.data?.message || "Failed to submit recipe");
       setMessageType("error");
-      return;
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Add user ID and ensure imageUrl is included
-    const formData = {
-      ...data,
-      user_id: session.user.id,
-      image_url: data.image_url || null // Ensure imageUrl is passed
-    };
-
-    // Preview mode
-    if (action === "preview") {
-      router.push(
-        `/recipes/preview?formData=${encodeURIComponent(
-          JSON.stringify(formData)
-        )}`
-      );
-      return;
-    }
-
-    // Submit mode - Ensure image is uploaded first
-    if (!data.image_url) {
-      setMessage("Please upload an image");
-      setMessageType("error");
-      return;
-    }
-
-    const response = await axios.post("/api/recipes", formData);
-    
-    setMessage("Recipe submitted successfully!");
-    setMessageType("success");
-    reset();
-    
-  } catch (error) {
-    console.error("Submission error:", error);
-    setMessage(error.response?.data?.message || "Failed to submit recipe");
-    setMessageType("error");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
 
   // const handleUpload = async (file) => {
@@ -418,7 +437,7 @@ const onSubmit = async (data, action = "submit") => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  
+
 
   return (
     <Box sx={{ fontFamily: "system-ui, sans-serif" }}>
@@ -533,7 +552,7 @@ const onSubmit = async (data, action = "submit") => {
               anchorEl={anchorE2} // Anchors the menu to the clicked element
               open={openNotification} // Controls visibility based on the 'open' state
               onClose={handleCloseNotification} // Closes the menu on outside click/item selection
-              // ... (styling props)
+            // ... (styling props)
             >
               <Box>
                 {notifications.map((notification, index) => [
@@ -583,7 +602,7 @@ const onSubmit = async (data, action = "submit") => {
                       <Box sx={{ flexGrow: 1 }}>
                         <Typography variant="body2">
                           {notification.type === "comment" ||
-                          notification.type === "like" ? (
+                            notification.type === "like" ? (
                             <>
                               <Typography
                                 component="span"
@@ -672,7 +691,7 @@ const onSubmit = async (data, action = "submit") => {
               <MenuItem
                 onClick={() => {
                   handleCloseMore();
-                  
+
                   console.log("Edit Profile clicked");
                   router.push("/profile/edit-profile");
                 }}
@@ -927,60 +946,60 @@ const onSubmit = async (data, action = "submit") => {
               />
 
               <Box>
-    <Button
-      variant="contained"
-      component="label"
-      startIcon={<CloudUploadIcon />}
-      sx={{
-        px: 3,
-        py: 1,
-        border: "2px solid #fb923c",
-        borderRadius: 2,
-        color: "#fb923c",
-        backgroundColor: "#fff",
-        "&:hover": { backgroundColor: "#fff" },
-      }}
-    >
-      <Typography variant="body1" fontWeight="bold">
-        Upload Image
-      </Typography>
-      <input
-        type="file"
-        hidden
-        accept="image/*"
-        onChange={handleImageChange}
-      />
-    </Button>
+                <Button
+                  variant="contained"
+                  component="label"
+                  startIcon={<CloudUploadIcon />}
+                  sx={{
+                    px: 3,
+                    py: 1,
+                    border: "2px solid #fb923c",
+                    borderRadius: 2,
+                    color: "#fb923c",
+                    backgroundColor: "#fff",
+                    "&:hover": { backgroundColor: "#fff" },
+                  }}
+                >
+                  <Typography variant="body1" fontWeight="bold">
+                    Upload Image
+                  </Typography>
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                </Button>
 
-    {uploadProgress > 0 && uploadProgress < 100 && (
-      <Box sx={{ width: '100%', mt: 1 }}>
-        <LinearProgress variant="determinate" value={uploadProgress} />
-        <Typography variant="caption" display="block" textAlign="center">
-          Uploading: {uploadProgress}%
-        </Typography>
-      </Box>
-    )}
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <Box sx={{ width: '100%', mt: 1 }}>
+                    <LinearProgress variant="determinate" value={uploadProgress} />
+                    <Typography variant="caption" display="block" textAlign="center">
+                      Uploading: {uploadProgress}%
+                    </Typography>
+                  </Box>
+                )}
 
-    {preview && (
-      <Box sx={{ mt: 2, textAlign: "center" }}>
-        <img
-          src={preview}
-          alt="Preview"
-          style={{
-            maxWidth: "100%",
-            maxHeight: "200px",
-            borderRadius: "8px",
-          }}
-        />
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          {watch("image_url") ? "Upload successful!" : "Uploading..."}
-        </Typography>
-      </Box>
-    )}
-    {errors.image_url && (
-      <FormHelperText error>{errors.image_url.message}</FormHelperText>
-    )}
-  </Box>
+                {preview && (
+                  <Box sx={{ mt: 2, textAlign: "center" }}>
+                    <img
+                      src={preview}
+                      alt="Preview"
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: "200px",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      {watch("image_url") ? "Upload successful!" : "Uploading..."}
+                    </Typography>
+                  </Box>
+                )}
+                {errors.image_url && (
+                  <FormHelperText error>{errors.image_url.message}</FormHelperText>
+                )}
+              </Box>
 
             </Stack>
           </Paper>
@@ -1000,18 +1019,17 @@ const onSubmit = async (data, action = "submit") => {
                 color: "#fff",
                 bgcolor: "#ff5722",
                 "&:hover": { bgcolor: "#e64a19" },
+                "&:disabled": { bgcolor: "#ccc" },
               }}
               onClick={handleSubmit((data) => onSubmit(data, "preview"))}
+              disabled={uploadProgress > 0 && uploadProgress < 100}
             >
-              Preview
+              {uploadProgress > 0 && uploadProgress < 100 ? "Uploading..." : "Preview"}
             </Button>
-            
+
           </Box>
         </Container>
       </Box>
     </Box>
   );
 }
-
-
-

@@ -15,10 +15,13 @@ import {
 
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function RecipePreviewPage() {
   const router = useRouter();
-  const { query } = router;
+  const { data: session } = useSession();
+  console.log(session);
+
 
   const searchParams = useSearchParams();
   const formDataRaw = searchParams.get("formData");
@@ -34,10 +37,11 @@ export default function RecipePreviewPage() {
   };
 
   // ပြင်ဆင်ပြီး code:
-   const isValidImageUrl = () => {
-    if (!formData?.imageUrl) return false;
+  const isValidImageUrl = () => {
+    const imageUrl = formData?.image_url || formData?.imageUrl; // Check both property names
+    if (!imageUrl) return false;
 
-    const url = String(formData.imageUrl); // Ensure it's a string
+    const url = String(imageUrl); // Ensure it's a string
     return (
       url.startsWith("http://") || // Be specific with http/https
       url.startsWith("https://") ||
@@ -56,50 +60,59 @@ export default function RecipePreviewPage() {
       </Box>
     );
   }
-  console.log("Image URL from formData:", formData.imageUrl);
+  console.log("Image URL from formData:", formData.image_url || formData.imageUrl);
+  console.log("Full formData:", formData);
 
   // ... (existing imports and code)
 
-const handleSave = async () => {
-  if (!formData) {
-    alert("No recipe data to save!");
-    return;
-  }
-
-  // Optional: Confirm with user before saving
-  if (!window.confirm("Are you sure you want to save this recipe?")) {
+  const handleSave = async () => {
+    if (!formData) {
+      alert("No recipe data to save!");
       return;
-  }
-
-  try {
-    // 🚨 IMPORTANT: Ensure formData.imageUrl is a persistent, publicly accessible URL here.
-    // If you are using blob URLs or base64 for preview, the actual image file MUST
-    // be uploaded to a server (e.g., Cloudinary, S3, or your own backend endpoint)
-    // and its public URL obtained and set in formData.imageUrl *before* this save.
-
-    const response = await fetch('/api/recipes', { // Your Next.js API route
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData), // Send all formData
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      alert('Recipe saved successfully! ID: ' + result.recipeId);
-      // Optionally, redirect to a confirmation page or recipe list
-      router.push('/recipes'); // Example: Redirect to recipes list
-    } else {
-      const errorData = await response.json();
-      alert('Failed to save recipe: ' + (errorData.message || 'Unknown error'));
-      console.error('Save error:', errorData);
     }
-  } catch (error) {
-    alert('An error occurred while saving the recipe.');
-    console.error('Network or unexpected error:', error);
-  }
-};
+
+    // Check if user is authenticated
+    if (!session?.user?.id) {
+      alert("Please log in first to save the recipe.");
+      router.push("/auth/signin");
+      return;
+    }
+
+    try {
+      const saveData = {
+        ...formData,
+        user_id: session.user.id, // Use authenticated user's ID
+        video_url: formData.video_url || null,
+        status: formData.status || "pending"
+      };
+
+      console.log("Sending data to API:", saveData);
+
+      const response = await fetch('/api/recipes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(saveData),
+      });
+
+      console.log("API Response status:", response.status);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("API Response data:", result);
+        alert('Recipe saved successfully! ID: ' + result.recipeId);
+        router.push('/recipes');
+      } else {
+        const errorData = await response.json();
+        console.error('API Error Response:', errorData);
+        alert('Failed to save recipe: ' + (errorData.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Network or unexpected error:', error);
+      alert('An error occurred while saving the recipe: ' + error.message);
+    }
+  };
 
 
   return (
@@ -134,7 +147,7 @@ const handleSave = async () => {
           <Typography sx={{ cursor: "pointer" }}>Contact us</Typography>
         </Box>
 
-        
+
       </Box>
 
       {/* Main Content */}
@@ -193,7 +206,7 @@ const handleSave = async () => {
           }}
         >
           {/* Recipe Image */}
-          
+
           {isValidImageUrl() ? (
             <Box sx={{
               display: "flex",
@@ -203,7 +216,7 @@ const handleSave = async () => {
               backgroundColor: "#f5f5f5"
             }}>
               <img
-                src={formData.imageUrl}
+                src={formData.image_url || formData.imageUrl}
                 alt="Recipe Preview"
                 style={{
                   maxWidth: "100%",
@@ -344,7 +357,7 @@ const handleSave = async () => {
             variant="contained"
             sx={{
               backgroundColor: "#f97316",
-              color:"#fff",
+              color: "#fff",
               "&:hover": { backgroundColor: "#ea580c" },
               fontWeight: "bold",
               borderRadius: 1,
@@ -360,6 +373,3 @@ const handleSave = async () => {
     </Box>
   );
 }
-
-
-

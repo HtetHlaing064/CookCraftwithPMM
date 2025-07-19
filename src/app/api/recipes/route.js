@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
 import * as yup from "yup";
-import { prisma } from "@/lib/prisma"; 
-import mysql from 'mysql2/promise';//pisma ချိတ်
+import { prisma } from "@/lib/prisma";
 
 const schema = yup.object().shape({
-    user_id: yup
-    .number()
-    .typeError("User ID must be a number")
+  user_id: yup
+    .string()
     .required("User ID is required"),
   name: yup.string().required("Recipe name is required"),
- 
+
   ingredient: yup
     .string()
     .min(10, "Ingredients should be at least 10 characters")
@@ -34,49 +32,16 @@ const schema = yup.object().shape({
   video_url: yup
     .string()
     .url("Must be a valid URL")
-    .required("Video URL is required"),
+    .nullable()
+    .optional(),
 
   status: yup
     .string()
-    .oneOf(["pending", "approve", "reject"], "Invalid status"),
+    .oneOf(["pending", "approve", "reject"], "Invalid status")
+    .default("pending"),
 });
 
-const recipeData = [
-  {
-    id:1,
-    name: "Pancakes", 
-    ingredient: "Flour, Milk, Eggs", 
-    instruction: "Mix and cook", 
-    category: "breakfast",
-     preCookingTime: "10 min", 
-     cookingTime: "15 min", 
-     imageUrl: "uploads/pancakes.jpg",
-     videoUrl: "https://youtube.com/example", 
-     status: "pending" 
-  },
-  
-  {
-    id:2,
-    name: "Chicken", 
-    ingredient: "chicken , Potato,", 
-    instruction: "Mix and cook", 
-    category: "lunch",
-     preCookingTime: "20 min", 
-     cookingTime: "45 min", 
-     imageUrl: "uploads/pancakes.jpg",
-     videoUrl: "https://youtube.com/example", 
-     status: "pending" 
-  }
-];
 
- //Database connection configuration
-const dbConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
-  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306, // Default MySQL port
-};
 
 //get favourites list api
 export async function GET() {
@@ -111,7 +76,7 @@ export async function GET() {
 //       console.error('Validation Error: Missing required fields');
 //       return NextResponse.json({ message: 'Missing required fields: name, ingredient, and instruction are required.' }, { status: 400 });
 //     }
-  
+
 
 //       let connection;
 //     try {
@@ -145,74 +110,86 @@ export async function GET() {
 // }
 
 export async function POST(request) {
-    let rawData;
+  try {
+    const rawData = await request.json();
+    console.log('Received raw data:', rawData);
+
+    const validatedData = await schema.validate(rawData, { abortEarly: false });
+    console.log('Validated data:', validatedData);
+
+    const {
+      user_id,
+      name,
+      category,
+      pre_cooking_time,
+      cooking_time,
+      ingredient,
+      instruction,
+      image_url,
+      video_url,
+      status,
+    } = validatedData;
+
     try {
-        rawData = await request.json();
-        console.log('Received raw data:', rawData);
+      const recipe = await prisma.recipe.create({
+        data: {
+          user_id,
+          name,
+          category,
+          pre_cooking_time,
+          cooking_time,
+          ingredient,
+          instruction,
+          image_url,
+          video_url,
+          status,
+        },
+      });
 
-        const validatedData = await schema.validate(rawData, { abortEarly: false });
-        console.log('Validated data:', validatedData);
+      console.log('Recipe saved successfully with Prisma, ID:', recipe.id);
+      return NextResponse.json(
+        {
+          message: 'Recipe saved successfully!',
+          recipeId: recipe.id,
+          recipe: recipe
+        },
+        { status: 201 }
+      );
 
-        const {
-            user_id,
-            name,
-            category,
-            pre_cooking_time,
-            cooking_time,
-            ingredient,
-            instruction,
-            image_url,
-            video_url,
-            status,
-        } = validatedData;
+    } catch (dbError) {
+      console.error('Error saving recipe with Prisma:', dbError);
 
-        let connection;
-        try {
-            connection = await mysql.createConnection(dbConfig);
-            console.log('MySQL connection established.');
+      if (dbError.code === 'P2002') {
+        return NextResponse.json(
+          { message: 'A recipe with this name already exists or a unique field is duplicated.', error: dbError.message },
+          { status: 409 }
+        );
+      }
 
-            const [result] = await connection.execute(
-                `INSERT INTO recipes (
-                    user_id, name, category, pre_cooking_time, cooking_time,
-                    ingredient, instruction, image_url, video_url, status, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, // <--- ဒီမှာ မေးခွန်းအမှတ်အသား (11) ခု ဖြစ်အောင် '?' တစ်ခု ထပ်ထည့်လိုက်ပါ
-                [
-                    user_id, name, category, pre_cooking_time, cooking_time,
-                    ingredient, instruction, image_url, video_url, status,
-                    new Date() // <--- ဒီမှာ JavaScript ရဲ့ `new Date()` ကို ထည့်ပေးလိုက်ပါ။ ဒါဆို တန်ဖိုး (11) ခု ဖြစ်သွားပါပြီ။
-                ]
-            );
-
-            console.log('Recipe saved successfully, ID:', result.insertId);
-            return NextResponse.json({ message: 'Recipe saved successfully!', recipeId: result.insertId }, { status: 201 });
-
-        } catch (dbError) {
-            console.error('Error saving recipe to MySQL:', dbError);
-            if (dbError.code === 'ER_DUP_ENTRY') {
-                return NextResponse.json({ message: 'A recipe with this name already exists or a unique field is duplicated.', error: dbError.message }, { status: 409 });
-            }
-            return NextResponse.json({ message: 'Failed to save recipe to database.', error: dbError.message }, { status: 500 });
-        } finally {
-            if (connection) {
-                await connection.end();
-                console.log('MySQL connection closed.');
-            }
-        }
-    } catch (error) {
-        if (error instanceof yup.ValidationError) {
-            console.error('Yup Validation Error:', error.errors);
-            return NextResponse.json(
-                { message: 'Validation failed', errors: error.errors },
-                { status: 400 }
-            );
-        } else {
-            console.error('Error in POST /api/recipes:', error);
-            if (error.message.includes('JSON')) {
-                 return NextResponse.json({ message: 'Invalid JSON body provided.', error: error.message }, { status: 400 });
-            }
-            return NextResponse.json({ message: 'Failed to save recipe.', error: error.message }, { status: 500 });
-        }
+      return NextResponse.json(
+        { message: 'Failed to save recipe to database.', error: dbError.message },
+        { status: 500 }
+      );
     }
+  } catch (error) {
+    if (error instanceof yup.ValidationError) {
+      console.error('Yup Validation Error:', error.errors);
+      return NextResponse.json(
+        { message: 'Validation failed', errors: error.errors },
+        { status: 400 }
+      );
+    } else {
+      console.error('Error in POST /api/recipes:', error);
+      if (error.message.includes('JSON')) {
+        return NextResponse.json(
+          { message: 'Invalid JSON body provided.', error: error.message },
+          { status: 400 }
+        );
+      }
+      return NextResponse.json(
+        { message: 'Failed to save recipe.', error: error.message },
+        { status: 500 }
+      );
+    }
+  }
 }
-   
-

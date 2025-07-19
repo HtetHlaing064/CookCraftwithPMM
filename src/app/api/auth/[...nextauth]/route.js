@@ -47,7 +47,7 @@ const authOptions = {
         // 5. If everything is correct, return the user object for the JWT
         return {
           id: user.id,
-          name: user.name,
+          // name: user.name,
           username: user.username,
           email: user.email,
         };

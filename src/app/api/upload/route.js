@@ -85,7 +85,7 @@ export async function POST(request) {
     await fs.promises.writeFile(filePath, Buffer.from(buffer));
 
     return NextResponse.json({
-      imageUrl: `/uploads/${newFilename}`,
+      image_url: `/uploads/${newFilename}`,
     });
 
   } catch (error) {
