@@ -51,7 +51,7 @@ import Badge from "@mui/material/Badge";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddIcon from '@mui/icons-material/Add';
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
 export default function RecipeDetailPage() {
 
@@ -399,8 +399,9 @@ export default function RecipeDetailPage() {
               <MenuItem
                 onClick={() => {
                   handleCloseMore();
-                  handleOpenLogoutDialog();
+                  
                   console.log("Edit Profile clicked");
+                  router.push("/profile/edit-profile");
                 }}
                 sx={{
                   "&:hover": {

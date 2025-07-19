@@ -34,7 +34,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
 
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from 'next/link'; // Next.js ရဲ့ Link component
 
 import NotificationsIcon from "@mui/icons-material/Notifications";
@@ -501,8 +501,9 @@ const handlePageChange = (page) => {
               <MenuItem
                 onClick={() => {
                   handleCloseMore();
-                  handleOpenLogoutDialog();
+                  
                   console.log("Edit Profile clicked");
+                  router.push("/profile/edit-profile");
                 }}
                 sx={{
                   "&:hover": {
