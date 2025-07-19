@@ -590,7 +590,7 @@ export default function RecipeDetailPage() {
                   placeholder="Add a comment"
                   fullWidth
                 />
-                <Button variant="contained" sx={{ bgcolor: "#F57C00" }}>
+                <Button variant="contained" sx={{ bgcolor: "#F57C00" ,color:'#fff'}}>
                   Send
                 </Button>
               </Stack>

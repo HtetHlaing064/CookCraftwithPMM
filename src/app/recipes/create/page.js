@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -18,14 +18,16 @@ import {
   Paper,
   Stack,
   FormHelperText,
-   ListItemIcon, ListItemText, Divider,
+  ListItemIcon,
+  ListItemText,
+  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Avatar,
-   Menu,
-   IconButton,
+  Menu,
+  IconButton,
 } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -33,9 +35,9 @@ import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
-
 import { useRouter } from "next/navigation";
-import Link from 'next/link'; // Next.js ရဲ့ Link component
+import { useSearchParams } from "next/navigation";
+import Link from "next/link"; // Next.js ရဲ့ Link component
 
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SearchIcon from "@mui/icons-material/Search";
@@ -50,9 +52,13 @@ import Grid from "@mui/material/Grid";
 import StarIcon from "@mui/icons-material/Star";
 
 import Badge from "@mui/material/Badge";
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import AddIcon from '@mui/icons-material/Add';
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import AddIcon from "@mui/icons-material/Add";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import { useSession } from "next-auth/react";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+
+import LinearProgress from "@mui/material/LinearProgress";
 
 const CATEGORY = [
   { value: "breakfast", label: "Breakfast" },
@@ -61,12 +67,11 @@ const CATEGORY = [
   { value: "dessert", label: "Dessert" },
 ];
 
-
 const schema = yup.object().shape({
-  user_id: yup
-    .number()
-    .typeError("User ID must be a number")
-    .required("User ID is required"),
+  //  user_id: yup
+  //   .number()
+  //   .typeError("User ID must be a number")
+  //   .required("User ID is required"),
   name: yup.string().required("Recipe name is required"),
 
   ingredient: yup
@@ -88,22 +93,16 @@ const schema = yup.object().shape({
 
   cooking_time: yup.string().required("Cooking time is required"),
 
-  image: yup.mixed().required("Image is required"),
+  // image: yup.mixed().required("Image is required"),
 
-  video_url: yup
-    .string()
-    .url("Must be a valid URL")
-    .required("Video URL is required"),
-
-  status: yup
-    .string()
-    .oneOf(["pending", "approve", "reject"], "Invalid status"),
+  // status: yup
+  //   .string()
+  //   .oneOf(["pending", "approve", "reject"], "Invalid status"),
 });
 
 export default function SubmitRecipePage() {
-
   // navbar
-const [anchorElMore, setAnchorElMore] = React.useState(null);
+  const [anchorElMore, setAnchorElMore] = React.useState(null);
   const openMore = Boolean(anchorElMore);
 
   const handleClickMore = (event) => {
@@ -115,17 +114,16 @@ const [anchorElMore, setAnchorElMore] = React.useState(null);
   };
 
   const [openLogoutDialog, setOpenLogoutDialog] = React.useState(false);
-
+  const { data: session } = useSession();
   const handleOpenLogoutDialog = () => setOpenLogoutDialog(true);
   const handleCloseLogoutDialog = () => setOpenLogoutDialog(false);
 
   const handleConfirmLogout = () => {
     setOpenLogoutDialog(false);
     console.log("User confirmed log out");
-    router.push("/"); 
+    router.push("/");
     // သင့် Log Out Logic ထည့်ပါ (ဥပမာ: router.push("/login"))
   };
-
 
   // Sample notification data to populate the dropdown
   const notifications = [
@@ -166,7 +164,7 @@ const [anchorElMore, setAnchorElMore] = React.useState(null);
     },
   ];
 
-// nav
+  // nav
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [anchorE2, setAnchorE2] = React.useState(null);
   const openProfile = Boolean(anchorEl);
@@ -176,8 +174,10 @@ const [anchorElMore, setAnchorElMore] = React.useState(null);
   const handleCloseProfile = () => setAnchorEl(null);
   const handleCloseNotification = () => setAnchorE2(null);
   const [currentPage, setCurrentPage] = useState(2);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-const handlePageChange = (page) => {
+  const handlePageChange = (page) => {
     setCurrentPage(page);
     console.log("Selected Page:", page);
     // You can also fetch data for this page here
@@ -189,168 +189,336 @@ const handlePageChange = (page) => {
     control,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {},
+    defaultValues: {
+      name: "",
+      category: "",
+      pre_cooking_time: "",
+      cooking_time: "",
+      instruction: "",
+      ingredient: "",
+      image_url: "",
+    },
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+ const handleImageUpload = async (file) => {
+  if (!file) return null;
+
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Upload failed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Upload error:', error);
+    setMessage('Image upload failed');
+    return null;
+  }
+};
+
+
+
+  const router = useRouter();
   const [imageFile, setImageFile] = useState(null);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
+  const searchParams = useSearchParams();
+  const [preview, setPreview] = useState(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    category: "",
+    pre_cooking_time: "",
+    cooking_time: "",
+    instruction: "",
+    ingredient: "",
+    imageFile: null,
+  });
 
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
+    try {
+      // Create a preview URL
+      const previewURL = URL.createObjectURL(file);
+      setPreview(previewURL);
+      
+      // Upload the image and get the URL
+      const formData = new FormData();
+      formData.append("image", file);
+      
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-  const onSubmit =async (formData) => {
-  try {
-      if (!session?.user?.id) {
-        setMessage("Please log in first to submit a recipe.");
-        setMessageType("error");
-        return;
+      if (!response.ok) {
+        throw new Error("Upload failed");
       }
 
-      console.log("formData", formData);
-      const bodyData = {
-         user_id: session.user.id,
-        name: formData.father_name,
-        ingredient: formData.ingredient,
-        instruction: formData.instruction,
-        category:formData.category ,
-        pre_cooking_time: formData.pre_cooking_time,
-        cooking_time: formData.cooking_time,
-        image: formData.image,
-        video_url: formData.video_url,
-      };
-      console.log(bodyData);
+      const result = await response.json();
       
-      const response = await axios.post("/api/recipes", bodyData);
-      reset();
-      console.log("Successfully Saved.");
-    } catch (error) {
-      console.error(error);
+      // Set the image URL in the form data
+      setValue("imageUrl", result.image_url); // Assuming your API returns { imageUrl: "..." }
+      setImageFile(file);
+      
+    } catch (err) {
+      console.error("Upload error:", err);
+      setError("Image upload failed");
     }
   };
 
 
+const onSubmit = async (data, action = "submit") => {
+  try {
+    setIsSubmitting(true);
 
+    if (!session?.user?.id) {
+      setMessage("Please log in first to submit a recipe.");
+      setMessageType("error");
+      return;
+    }
+
+    // Add user ID and ensure imageUrl is included
+    const formData = {
+      ...data,
+      user_id: session.user.id,
+      image_url: data.image_url || null // Ensure imageUrl is passed
+    };
+
+    // Preview mode
+    if (action === "preview") {
+      router.push(
+        `/recipes/preview?formData=${encodeURIComponent(
+          JSON.stringify(formData)
+        )}`
+      );
+      return;
+    }
+
+    // Submit mode - Ensure image is uploaded first
+    if (!data.image_url) {
+      setMessage("Please upload an image");
+      setMessageType("error");
+      return;
+    }
+
+    const response = await axios.post("/api/recipes", formData);
+    
+    setMessage("Recipe submitted successfully!");
+    setMessageType("success");
+    reset();
+    
+  } catch (error) {
+    console.error("Submission error:", error);
+    setMessage(error.response?.data?.message || "Failed to submit recipe");
+    setMessageType("error");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
+  // const handleUpload = async (file) => {
+  //   if (!file) return null;
+
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("image", file);
+
+  //     const response = await fetch("/api/upload", {
+  //       method: "POST",
+  //       body: formData,
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error("Upload failed");
+  //     }
+
+  //     return await response.json();
+  //   } catch (err) {
+  //     console.error("Upload error:", err);
+  //     setError("ဓာတ်ပုံတင်ရာတွင် အမှားတစ်ခုဖြစ်နေပါသည်");
+  //     return null;
+  //   }
+  // };
+  // // Save လုပ်တဲ့အခါ
+  // // Save handler
+  // const handleSave = async () => {
+  //   if (!formValues.imageFile) {
+  //     setError("ကျေးဇူးပြု၍ ဓာတ်ပုံတင်ပါ");
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+  //   setError(null);
+
+  //   try {
+  //     // Upload image first
+  //     const uploadResult = await handleUpload(formValues.imageFile);
+
+  //     if (!uploadResult?.imageUrl) {
+  //       throw new Error("Image upload failed");
+  //     }
+
+  //     // Prepare all form data
+  //     const formData = {
+  //       name: formValues.name,
+  //       category: formValues.category,
+  //       pre_cooking_time: formValues.pre_cooking_time,
+  //       cooking_time: formValues.cooking_time,
+  //       instruction: formValues.instruction,
+  //       ingredient: formValues.ingredient,
+  //       imageUrl: uploadResult.imageUrl,
+  //     };
+
+  //     // Navigate to preview page
+  //     router.push(
+  //       `/recipes/preview?formData=${encodeURIComponent(
+  //         JSON.stringify(formData)
+  //       )}`
+  //     );
+  //   } catch (err) {
+  //     console.error("Save error:", err);
+  //     setError("မှတ်သားရာတွင် အမှားတစ်ခုဖြစ်နေပါသည်");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  useEffect(() => {
+    const formDataStr = searchParams.get("formData");
+    if (formDataStr) {
+      try {
+        const decodedData = JSON.parse(decodeURIComponent(formDataStr));
+        setFormData(decodedData);
+      } catch (error) {
+        console.error("Error parsing form data:", error);
+      }
+    }
+  }, [searchParams]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  
 
   return (
     <Box sx={{ fontFamily: "system-ui, sans-serif" }}>
       {/* Navbar */}
-      <AppBar position="sticky" sx={{ backgroundColor: 'white', color: 'black', boxShadow: '0 4px 12px rgba(255, 111, 0, 0.2)', }}>
+      <AppBar
+        position="sticky"
+        sx={{
+          backgroundColor: "white",
+          color: "black",
+          boxShadow: "0 4px 12px rgba(255, 111, 0, 0.2)",
+        }}
+      >
         {/* Toolbar space-around  */}
-        <Toolbar sx={{ justifyContent: 'space-around', alignItems: 'center' }}>
-
+        <Toolbar sx={{ justifyContent: "space-around", alignItems: "center" }}>
           {/* Logo */}
-          <Typography variant="h6" sx={{ color: '#ff6f00', fontWeight: 'bold' }}>
-
+          <Typography
+            variant="h6"
+            sx={{ color: "#ff6f00", fontWeight: "bold" }}
+          >
             COOKCRAFT
-
           </Typography>
 
           {/* Navigation Links */}
           <Box>
             <Link href="/home" passHref>
-              <Button sx={{ color: 'black', mx: 1,
-                 transition: 'transform 0.3s',
-                '&:hover': {
-                  color: '#ff6f00',
-                  transform: 'translateY(-3px)',
-                }
-
-               }}>Home</Button>
-            </Link>
-            <Link href="/recipes" passHref>
-              <Button sx={{
-                color: 'black', mx: 1,
-                transition: 'transform 0.3s',
-                '&:hover': {
-                  color: '#ff6f00',
-                  transform: 'translateY(-3px)',
-                }
-              }}>Recipes</Button>
-            </Link>
-            <Link href="/about" passHref>
-              <Button sx={{
-                color: 'black', mx: 1,
-                transition: 'transform 0.3s',
-                '&:hover': {
-                  color: '#ff6f00',
-                  transform: 'translateY(-3px)',
-                }
-              }}>About</Button>
-              {/* textTransform: 'none' ဆိုစာလုံး အသေးရေးလို့ရ */}
-            </Link>
-
-             <Link href="/contact" passHref>
-                            <Button sx={{
-                                color: 'black', mx: 1,
-                                transition: 'transform 0.3s',
-                                '&:hover': {
-                                    color: '#ff6f00',
-                                    transform: 'translateY(-3px)',
-                                }
-                            }}>Contact Us</Button>
-                            {/* textTransform: 'none' ဆိုစာလုံး အသေးရေးလို့ရ */}
-                        </Link>
-          </Box>
-
-          {/*  Action Icons */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            {/* <Link href="/recipes/create" passHref>
               <Button
-                variant="outlined"
-                startIcon={
-                  <Box
-                    sx={{
-                      backgroundColor: "white",
-                      color: "#ff7f00",
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 20,
-                      height: 20,
-                      fontSize: "16px",
-                    }}
-                  >
-                    <AddIcon fontSize="inherit" />
-                  </Box>
-                }
                 sx={{
-                  textTransform: "none",
-                  backgroundColor: "#ff7f00",
-                  color: "white",
-                  borderRadius: "20px",
-                  paddingY: "6px",
-                  paddingX: "16px",
-                  fontSize: "16px",
-                  fontWeight: 500,
-                  transition: 'transform 0.3s',
+                  color: "black",
+                  mx: 1,
+                  transition: "transform 0.3s",
                   "&:hover": {
-                    backgroundColor: "#e86f00",
-                    transform: 'translateY(-3px)',
+                    color: "#ff6f00",
+                    transform: "translateY(-3px)",
                   },
                 }}
               >
-                Create Post
+                Home
               </Button>
-            </Link> */}
+            </Link>
+            <Link href="/recipes" passHref>
+              <Button
+                sx={{
+                  color: "black",
+                  mx: 1,
+                  transition: "transform 0.3s",
+                  "&:hover": {
+                    color: "#ff6f00",
+                    transform: "translateY(-3px)",
+                  },
+                }}
+              >
+                Recipes
+              </Button>
+            </Link>
+            <Link href="/about" passHref>
+              <Button
+                sx={{
+                  color: "black",
+                  mx: 1,
+                  transition: "transform 0.3s",
+                  "&:hover": {
+                    color: "#ff6f00",
+                    transform: "translateY(-3px)",
+                  },
+                }}
+              >
+                About
+              </Button>
+              {/* textTransform: 'none' ဆိုစာလုံး အသေးရေးလို့ရ */}
+            </Link>
 
-            {/* <Link href="/notifications" passHref>
-                <IconButton sx={{ color:'black' }}>
-                    <NotificationsIcon />
-                </IconButton>
-            </Link> */}
+            <Link href="/contact" passHref>
+              <Button
+                sx={{
+                  color: "black",
+                  mx: 1,
+                  transition: "transform 0.3s",
+                  "&:hover": {
+                    color: "#ff6f00",
+                    transform: "translateY(-3px)",
+                  },
+                }}
+              >
+                Contact Us
+              </Button>
+              {/* textTransform: 'none' ဆိုစာလုံး အသေးရေးလို့ရ */}
+            </Link>
+          </Box>
 
+          {/*  Action Icons */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             {/* notifaction */}
             <Avatar
               sx={{
-                bgcolor: "#F57C00", cursor: "pointer",
-                transition: 'transform 0.3s',
+                bgcolor: "#F57C00",
+                cursor: "pointer",
+                transition: "transform 0.3s",
                 "&:hover": {
                   backgroundColor: "#e86f00",
-                  transform: 'translateY(-3px)',
+                  transform: "translateY(-3px)",
                 },
               }}
               onClick={handleClickNotification}
@@ -361,12 +529,11 @@ const handlePageChange = (page) => {
               sx={{
                 p: 2,
                 minWidth: 300,
-
               }}
               anchorEl={anchorE2} // Anchors the menu to the clicked element
               open={openNotification} // Controls visibility based on the 'open' state
               onClose={handleCloseNotification} // Closes the menu on outside click/item selection
-            // ... (styling props)
+              // ... (styling props)
             >
               <Box>
                 {notifications.map((notification, index) => [
@@ -374,7 +541,6 @@ const handlePageChange = (page) => {
                     key={`item-${notification.id}`}
                     onClick={handleClickNotification}
                     sx={{
-
                       "&:hover": {
                         backgroundColor: "#ff9f00",
                       },
@@ -417,7 +583,7 @@ const handlePageChange = (page) => {
                       <Box sx={{ flexGrow: 1 }}>
                         <Typography variant="body2">
                           {notification.type === "comment" ||
-                            notification.type === "like" ? (
+                          notification.type === "like" ? (
                             <>
                               <Typography
                                 component="span"
@@ -467,15 +633,20 @@ const handlePageChange = (page) => {
               </Box>
             </Menu>
 
-            <Link href="/profile" passHref style={{ textDecoration: 'none' }}>
-              <Avatar sx={{
-                bgcolor: '#ff7f00', cursor: 'pointer',
-                transition: 'transform 0.3s',
-                "&:hover": {
-                  backgroundColor: "#e86f00",
-                  transform: 'translateY(-3px)',
-                },
-              }}>K</Avatar>
+            <Link href="/profile" passHref style={{ textDecoration: "none" }}>
+              <Avatar
+                sx={{
+                  bgcolor: "#ff7f00",
+                  cursor: "pointer",
+                  transition: "transform 0.3s",
+                  "&:hover": {
+                    backgroundColor: "#e86f00",
+                    transform: "translateY(-3px)",
+                  },
+                }}
+              >
+                K
+              </Avatar>
             </Link>
 
             {/* navbarmore */}
@@ -520,9 +691,8 @@ const handlePageChange = (page) => {
                 onClick={() => {
                   handleCloseMore();
                   console.log("History clicked");
-                  router.push("/history");  
-                }
-                }
+                  router.push("/history");
+                }}
                 sx={{
                   "&:hover": {
                     backgroundColor: "#ff9f00",
@@ -538,7 +708,7 @@ const handlePageChange = (page) => {
               <MenuItem
                 onClick={() => {
                   handleCloseMore();
-                   handleOpenLogoutDialog(); 
+                  handleOpenLogoutDialog();
                   console.log("Sign Out clicked");
                 }}
                 sx={{
@@ -560,7 +730,10 @@ const handlePageChange = (page) => {
               aria-labelledby="logout-dialog-title"
               aria-describedby="logout-dialog-description"
             >
-              <DialogTitle id="logout-dialog-title" sx={{ textAlign: "center" }}>
+              <DialogTitle
+                id="logout-dialog-title"
+                sx={{ textAlign: "center" }}
+              >
                 <WarningAmberIcon sx={{ color: "#ff7f00", fontSize: 50 }} />
               </DialogTitle>
 
@@ -568,9 +741,7 @@ const handlePageChange = (page) => {
                 <Typography variant="h6" gutterBottom>
                   Are you sure?
                 </Typography>
-                <Typography variant="body2">
-                  You want to log out?
-                </Typography>
+                <Typography variant="body2">You want to log out?</Typography>
               </DialogContent>
 
               <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
@@ -586,17 +757,12 @@ const handlePageChange = (page) => {
                   color="primary"
                   onClick={handleConfirmLogout}
                   autoFocus
-                  
                 >
                   Log Out
                 </Button>
               </DialogActions>
             </Dialog>
-
-
-
           </Box>
-
         </Toolbar>
       </AppBar>
 
@@ -655,146 +821,197 @@ const handlePageChange = (page) => {
       </Box>
 
       {/* Form */}
-      <Container maxWidth="md" sx={{ py: 6 }}>
-        <Paper
-          component="form"
-          onSubmit={handleSubmit(onSubmit)}
-          elevation={4}
-          sx={{ p: 4, borderRadius: 3, boxShadow: 6, bgcolor: "white" }}
-        >
-          <Typography variant="h4" gutterBottom align="center">
-            Submit a Recipe 🍽️
-          </Typography>
+      <Box>
+        <Container maxWidth="md">
+          <Paper
+            component="form"
+            onSubmit={handleSubmit(onSubmit)}
+            elevation={4}
+            sx={{ p: 4, borderRadius: 3, boxShadow: 6, bgcolor: "white" }}
+          >
+            <Typography variant="h4" gutterBottom align="center">
+              Submit a Recipe 🍽️
+            </Typography>
 
-          {message && (
-            <Box
-              sx={{
-                mb: 3,
-                p: 2,
-                borderRadius: 2,
-                textAlign: "center",
-                bgcolor:
-                  messageType === "success" ? "success.light" : "error.light",
-                color:
-                  messageType === "success"
-                    ? "success.contrastText"
-                    : "error.contrastText",
-              }}
-            >
-              {message}
-            </Box>
-          )}
-
-          <Stack spacing={3}>
-            <TextField
-              label="Recipe By"
-              fullWidth
-              {...register("username")}
-              error={!!errors.username}
-              helperText={errors.username?.message}
-            />
-            <TextField
-              label="Recipe Name"
-              fullWidth
-              {...register("name")}
-              error={!!errors.name}
-              helperText={errors.name?.message}
-            />
-            <TextField
-              label="Pre Cooking Time (minutes)"
-              fullWidth
-              {...register("pre_cooking_time")}
-              error={!!errors.pre_cooking_time}
-              helperText={errors.pre_cooking_time?.message}
-            />
-
-            <TextField
-              label="Cooking Time (minutes)"
-              fullWidth
-              {...register("cooking_time")}
-              error={!!errors.cooking_time}
-              helperText={errors.cooking_time?.message}
-            />
-
-           
-
-            <FormControl
-              fullWidth
-              sx={{ mb: 2 }}
-              margin="normal"
-              error={!!errors.category}
-            >
-              <InputLabel id="category-label">Category</InputLabel>
-              <Controller
-                name="category"
-                control={control}
-                error={!!errors.category}
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    labelId="category-label"
-                    label="Category"
-                    value={field.value || ""}
-                  >
-                    {CATEGORY.map((category, index) => (
-                      <MenuItem key={category.value} value={category.value}>
-                        {category.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
-              />
-
-              <FormHelperText>{errors.category?.message}</FormHelperText>
-            </FormControl>
-
-            <TextField
-              label="Ingredients"
-              multiline
-              rows={5}
-              fullWidth
-              {...register("ingredient")}
-              error={!!errors.ingredient}
-              helperText={errors.ingredient?.message}
-            />
-
-            <TextField
-              label="Instructions"
-              multiline
-              rows={5}
-              fullWidth
-              {...register("instruction")}
-              error={!!errors.instruction}
-              helperText={errors.instruction?.message}
-            />
-
-            <Button variant="outlined" component="label">
-              Upload Image
-              <input
-                type="file"
-                hidden
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) setImageFile(file);
+            {message && (
+              <Box
+                sx={{
+                  mb: 3,
+                  p: 2,
+                  borderRadius: 2,
+                  textAlign: "center",
+                  bgcolor:
+                    messageType === "success" ? "success.light" : "error.light",
+                  color:
+                    messageType === "success"
+                      ? "success.contrastText"
+                      : "error.contrastText",
                 }}
+              >
+                {message}
+              </Box>
+            )}
+            {/* Form */}
+            <Stack spacing={3}>
+              <TextField
+                label="Recipe Name"
+                fullWidth
+                {...register("name")}
+                error={!!errors.name}
+                helperText={errors.name?.message}
               />
-            </Button>
+              <TextField
+                label="Pre Cooking Time (minutes)"
+                fullWidth
+                {...register("pre_cooking_time")}
+                error={!!errors.pre_cooking_time}
+                helperText={errors.pre_cooking_time?.message}
+              />
 
-            <TextField
-          label="Video Link (optional)"
-          fullWidth
-          {...register("video_url")}
-          error={!!errors.video_url}
-          helperText={errors.video_url?.message}
+              <TextField
+                label="Cooking Time (minutes)"
+                fullWidth
+                {...register("cooking_time")}
+                error={!!errors.cooking_time}
+                helperText={errors.cooking_time?.message}
+              />
+
+              <FormControl
+                fullWidth
+                sx={{ mb: 2 }}
+                margin="normal"
+                error={!!errors.category}
+              >
+                <InputLabel id="category-label">Category</InputLabel>
+                <Controller
+                  name="category"
+                  control={control}
+                  error={!!errors.category}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      labelId="category-label"
+                      label="Category"
+                      value={field.value || ""}
+                    >
+                      {CATEGORY.map((category, index) => (
+                        <MenuItem key={category.value} value={category.value}>
+                          {category.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+
+                <FormHelperText>{errors.category?.message}</FormHelperText>
+              </FormControl>
+
+              <TextField
+                label="Ingredients"
+                multiline
+                rows={5}
+                fullWidth
+                {...register("ingredient")}
+                error={!!errors.ingredient}
+                helperText={errors.ingredient?.message}
+              />
+
+              <TextField
+                label="Instructions"
+                multiline
+                rows={5}
+                fullWidth
+                {...register("instruction")}
+                error={!!errors.instruction}
+                helperText={errors.instruction?.message}
+              />
+
+              <Box>
+    <Button
+      variant="contained"
+      component="label"
+      startIcon={<CloudUploadIcon />}
+      sx={{
+        px: 3,
+        py: 1,
+        border: "2px solid #fb923c",
+        borderRadius: 2,
+        color: "#fb923c",
+        backgroundColor: "#fff",
+        "&:hover": { backgroundColor: "#fff" },
+      }}
+    >
+      <Typography variant="body1" fontWeight="bold">
+        Upload Image
+      </Typography>
+      <input
+        type="file"
+        hidden
+        accept="image/*"
+        onChange={handleImageChange}
+      />
+    </Button>
+
+    {uploadProgress > 0 && uploadProgress < 100 && (
+      <Box sx={{ width: '100%', mt: 1 }}>
+        <LinearProgress variant="determinate" value={uploadProgress} />
+        <Typography variant="caption" display="block" textAlign="center">
+          Uploading: {uploadProgress}%
+        </Typography>
+      </Box>
+    )}
+
+    {preview && (
+      <Box sx={{ mt: 2, textAlign: "center" }}>
+        <img
+          src={preview}
+          alt="Preview"
+          style={{
+            maxWidth: "100%",
+            maxHeight: "200px",
+            borderRadius: "8px",
+          }}
         />
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          {watch("image_url") ? "Upload successful!" : "Uploading..."}
+        </Typography>
+      </Box>
+    )}
+    {errors.image_url && (
+      <FormHelperText error>{errors.image_url.message}</FormHelperText>
+    )}
+  </Box>
 
+            </Stack>
+          </Paper>
 
-            <Button type="submit" variant="contained" size="large">
-              Submit Recipe
+          <Box
+            sx={{
+              mt: "auto",
+              display: "flex",
+              justifyContent: "flex-end",
+              py: 2,
+            }}
+          >
+            <Button
+              variant="contained"
+              sx={{
+                height: "50px",
+                color: "#fff",
+                bgcolor: "#ff5722",
+                "&:hover": { bgcolor: "#e64a19" },
+              }}
+              onClick={handleSubmit((data) => onSubmit(data, "preview"))}
+            >
+              Preview
             </Button>
-          </Stack>
-        </Paper>
-      </Container>
+            
+          </Box>
+        </Container>
+      </Box>
     </Box>
   );
 }
+
+
+
