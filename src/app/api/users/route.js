@@ -33,6 +33,8 @@ const schema = yup.object().shape({
 //     },
 // ]
 
+// hi i am the new code...
+
 // get user list api
 export async function GET() {
     const users = await prisma.user.findMany();
