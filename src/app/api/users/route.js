@@ -14,24 +14,26 @@ const schema = yup.object().shape({
         .matches(/\d/, 'Password must contain at least one number'),
 });
 
-// const UserData = [
-//     {
-//         id: 1,
-//         name: 'Su Su',
-//         email: 'susu@gmail.com',
-//         password: '123456',
-//     }, {
-//          id: 2,
-//         name: 'Aung Aung',
-//         email: 'aung@gmail.com',
-//         password: '123456',
-//     }, {
-//         id: 3,
-//         name: 'Zaw Zaw',
-//         email: 'Zaw@gmail.com',
-//         password: '123456',
-//     },
-// ]
+const UserData = [
+    {
+        id: 1,
+        name: 'Su Su',
+        email: 'susu@gmail.com',
+        password: '123456',
+    }, {
+         id: 2,
+        name: 'Aung Aung',
+        email: 'aung@gmail.com',
+        password: '123456',
+    }, {
+        id: 3,
+        name: 'Zaw Zaw',
+        email: 'Zaw@gmail.com',
+        password: '123456',
+    },
+]
+
+// hi i am the new code...
 
 // get user list api
 export async function GET() {
