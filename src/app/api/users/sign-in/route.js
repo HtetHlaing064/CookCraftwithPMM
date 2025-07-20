@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
+import jwt from "jsonwebtoken";
 
 const pool = mysql.createPool({
   host: "localhost",
@@ -8,11 +9,13 @@ const pool = mysql.createPool({
   database: "cookcraft",
 });
 
+const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key"; // Use env variable in real app
+
 export async function POST(req) {
   try {
     const { email, password } = await req.json();
 
-    // အရင် email ရှိ/မရှိစစ်မယ်
+    // Check if email exists
     const [emailRows] = await pool.query(
       "SELECT * FROM users WHERE email = ?",
       [email]
@@ -22,18 +25,38 @@ export async function POST(req) {
       return NextResponse.json({ success: false, error: "Email not found" });
     }
 
-    // အဲ့ email ရှိသွားပြီဆို password တစ်ခါထပ်စစ်မယ်
-    const [passwordRows] = await pool.query(
+    // Check if password matches
+    const [userRows] = await pool.query(
       "SELECT * FROM users WHERE email = ? AND password = ?",
       [email, password]
     );
 
-    if (passwordRows.length === 0) {
+    if (userRows.length === 0) {
       return NextResponse.json({ success: false, error: "Incorrect password" });
     }
 
-    // Login success
-    return NextResponse.json({ success: true });
+    const user = userRows[0];
+
+    // Generate JWT
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+      },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    return NextResponse.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+    });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ success: false, error: "Server error" });
